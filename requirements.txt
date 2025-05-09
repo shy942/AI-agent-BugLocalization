@@ -1,0 +1,10 @@
+regex
+litellm
+keybert
+sentence-transformers
+rank-bm25
+langchain
+langchain-community
+langchain-huggingface
+numpy
+faiss-cpu
