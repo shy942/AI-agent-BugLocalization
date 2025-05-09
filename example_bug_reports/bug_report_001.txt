@@ -1,0 +1,10 @@
+App crashes on login
+Description: When the user tries to log in using Google SSO, the app crashes immediately with a blank screen.
+
+Expected Behavior: The app should allow login and redirect to the dashboard.
+
+Steps to Reproduce:
+1. Open the app
+2. Click 'Login with Google'
+3. Select a valid Google account
+4. App crashes instead of logging in.
