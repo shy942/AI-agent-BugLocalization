@@ -13,8 +13,8 @@ python -m venv .venv
 # Install required Python Packages
 pip install -r requirements.txt
 # tools.py
-contains required tools used by the agents
+contains the required tools used by the agents
 # agents.py
 contains several agents
 # main.py
-main file to run
+Main file to run
