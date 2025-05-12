@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Tables\Builders;
+
+use App\Model;
+use Illuminate\Database\Eloquent\Builder;
+use LaravelEnso\Tables\Services\Table;
+
+class ModelTable extends Table
+{
+    protected string $templatePath = __DIR__.'/../Templates/template.json';
+
+    public function query(): Builder
+    {
+        return Model::selectRaw('
+            id, ......
+        ');
+    }
+}
