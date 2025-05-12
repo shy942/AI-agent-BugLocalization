@@ -1,0 +1,8 @@
+"label": "Protocol",
+"name": "protocol",
+"data": "protocol",
+"meta": [
+        "searchable",
+        "sortable",
+        {"visible": false}
+]

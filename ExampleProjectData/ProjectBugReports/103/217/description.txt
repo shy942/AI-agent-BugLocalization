@@ -1,0 +1,27 @@
+<!-- Choose one of the following: -->
+This is  a **bug**.
+
+<!-- Make sure that everything is checked below: -->
+### Prerequisites
+* [x] Are you running the latest version?
+* [?] Are you reporting to the correct repository?
+* [x] Did you check the documentation?
+* [x] Did you perform a cursory search?
+
+### Description
+When dealing with multiple selection filters, I noticed that pagination is not working when selecting as many options as it needs to exceed the number of entries per page.
+
+![image](https://user-images.githubusercontent.com/16973022/92004381-d54a4a80-ed4a-11ea-977a-a1410d196bd6.png)
+
+### Steps to Reproduce
+1. Define a "<select-filter multiple ... " for one existing table
+2. Link a source (options) and a v-model.
+3. Make sure table has more entries then the result per page table setting.
+3. Select all possible options from filter.
+### Expected behavior
+See all results as if filter was not applied with correct number of pages.
+
+### Actual behavior
+Just first page is visible.
+
+

@@ -1,0 +1,33 @@
+This is  a **bug**.
+
+### Prerequisites
+* [ ? ] Are you running the latest version?
+* [ ? ] Are you reporting to the correct repository?
+* [ ? ] Did you check the documentation?
+* [ ? ] Did you perform a cursory search?
+
+### Description
+`RecordsInfo.vue` is throwing an error which seems to be coming from the computed properties (see screenshot below of error), all computed properties are showing `(error during evaluation)`. The error goes away if I comment out the contents of the `chunkInfo()` computed property, however the other computed properties still show `(error during evaluation)`. 
+
+![screen shot 2018-08-06 at 12 31 14](https://user-images.githubusercontent.com/19330442/43727476-ff6a08f2-9999-11e8-80c4-0cace2fc133d.png)
+
+It seems to be related to the `this.i18n()` function, when I change the `chunkInfo()` computed property to the following, it produces no error and shows the string on page.
+
+```
+        chunkInfo() {
+            return 'From' + this.startInfo + ' ' + 'To ' + this.start + this.body.data.length;
+        }
+```
+
+### Steps to Reproduce
+Installed into a Laravel project standalone without the rest of Enso, followed the documentation for an independant installation, all listed dependencies are installed.
+
+The error only happens when data is in the table.
+
+### Expected behavior
+A string like shown in the example `From 1 to 10 of 100000 entries (filtered from 100000 total records)`
+
+### Actual behavior
+No string generated at all, error in console shown above.
+
+

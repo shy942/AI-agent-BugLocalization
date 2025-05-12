@@ -1,0 +1,32 @@
+<!-- Choose one of the following: -->
+This is  a **bug**.
+
+<!-- Make sure that everything is checked below: -->
+### Prerequisites
+* [x] Are you running the latest version?
+* [x] Are you reporting to the correct repository?
+* [x] Did you check the documentation?
+* [x] Did you perform a cursory search?
+
+### Description
+<!-- Description of the bug or feature -->
+The entries count in table footer is wrong if you have soft deleted rows in your database.
+![image](https://user-images.githubusercontent.com/7204559/95680182-ee5eda80-0bd7-11eb-8daf-7526f5bfe435.png)
+
+### Steps to Reproduce
+1. Create a table for a model which uses soft deletes
+2. Delete one entry
+3. Check sum row in footer
+
+### Expected behavior
+<!-- What you expected to happen -->
+In my screenshot the footer row should be "From 1 to 12 of 12 entries"
+
+### Actual behavior
+<!-- What actually happened -->
+In my screenshot the footer row is "From 1 to 12 of 14 entries"
+- I have 2 soft deleted rows in table
+
+<!-- when the issue is resolved, don't forget to **CLOSE** it -->
+
+

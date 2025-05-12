@@ -1,0 +1,19 @@
+[Vue warn]: Error in render: "TypeError: Cannot convert undefined or null to object"
+
+found in
+
+---> <RecordsInfo> at resources/assets/js/components/enso/vuedatatable/RecordsInfo.vue
+       <VueTable> at resources/assets/js/components/enso/vuedatatable/VueTable.vue
+         <Root>
+
+TypeError: Cannot convert undefined or null to object
+    at Function.keys (<anonymous>)
+    at VueComponent._default (app.js:41090)
+    at VueComponent.chunkInfo (app.js:52063)
+    at Watcher.get (app.js:7844)
+    at Watcher.evaluate (app.js:7951)
+    at VueComponent.computedGetter [as chunkInfo] (app.js:8209)
+    at Object.get (app.js:6645)
+    at Proxy.render (app.js:52800)
+    at VueComponent.Vue._render (app.js:9246)
+    at VueComponent.updateComponent (app.js:7490)
