@@ -5,12 +5,19 @@ import regex
 from sentence_transformers import SentenceTransformer
 from keybert import KeyBERT
 
-def readFile(folder_path: str, filename: str) -> str:
-    file_path = os.path.join(folder_path, filename)
-    if not os.path.exists(file_path):
-        return f"File not found: {file_path}"
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return f.read()
+
+def readFile(folder_path: str) -> str:
+    """Reads title.txt + description.txt """
+    contents = []
+
+    for name in ["title.txt", "description.txt"]:
+        path = os.path.join(folder_path, name)
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                contents.append(f.read().strip())
+
+    return "\n".join(contents).strip()
+
 # read the stopwords
 def load_stopwords(file_path: str) -> list[str]:
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -18,7 +25,7 @@ def load_stopwords(file_path: str) -> list[str]:
     
 def preprocess_text(bug_report_content:str) -> str:
    
-    stopwords = load_stopwords("C:\\Users\\mukta\\OneDrive\\Documents\\PhD\\Study-4\\AI-agent\\stop_words_english.txt")
+    stopwords = load_stopwords("./stop_words_english.txt")
    
     # remove urls and the markdown link
     bug_report_content = regex.sub(r'\!\[.*?\]\(https?://\S+?\)', '', bug_report_content)
