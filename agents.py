@@ -47,7 +47,7 @@ Now decide which tool to use.
 # Initialize the agents
 try:
     MY_MODEL = completion  # liteLLM wrapper (can be your own callable model)
-
+    #need to update this block coz now readFile only takes the directory path
     readBugReportContent_agent = Agent(
         model=MY_MODEL,
         name="readBugReportContent_agent",
