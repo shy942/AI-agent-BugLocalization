@@ -1,5 +1,8 @@
 # Agent class for simplicity
-from tools import readFile, processBugReportContent, preprocess_text, load_stopwords, processBugRepotQueryKeyBERT
+from tools import (
+    readFile, processBugReportContent, preprocess_text, load_stopwords, processBugRepotQueryKeyBERT, 
+    index_source_code, bug_localization_BM25_and_FAISS, load_index_bm25_and_faiss
+)
 from litellm import completion
 from typing import Callable
 
@@ -30,8 +33,12 @@ Now decide which tool to use.
                 tool_output = self.tools["processBugReportContent"](*args)
             elif self.name == "process_bug_report_query_keybert_agent":
                 tool_output = self.tools["processBugRepotQueryKeyBERT"](*args)
-            #elif self.name == "source_code_preprocessing_agent":
-            #    tool_output = self.tools["source_code_preprocessing"](*args)
+            elif self.name == "index_source_code_agent":
+                tool_output = self.tools["index_source_code"](*args)
+            elif self.name == "load_index_bm25_and_faiss_agent":
+                tool_output = self.tools["load_index_bm25_and_faiss"](*args)
+            elif self.name == "bug_localization_BM25_and_FAISS_agent":
+                tool_output = self.tools["bug_localization_BM25_and_FAISS"](*args)
             #elif self.name == "hybrid_retrieve_agent":
             #    tool_output = self.tools["hybrid_retrieve"](*args)
             else:
@@ -80,5 +87,37 @@ try:
         tools=[processBugRepotQueryKeyBERT], # List of tools the agent can use
         output_key="file_content" # Specify the output key for the tool's result
         )
+    
+    index_source_code_agent = Agent(
+        model=MY_MODEL,
+        name="index_source_code_agent",
+        instruction="You are the IndexSourceCode Agent."
+                    "You will receive a folder path ('source_code_dir') which is the path to the source code."
+                    "Your ONLY task is to index the source code using the 'index_source_code' tool. ",
+        tools=[index_source_code],
+        output_key="file_content"
+    )
+    
+    load_index_bm25_and_faiss_agent = Agent(
+        model=MY_MODEL,
+        name="load_index_bm25_and_faiss_agent",
+        instruction="You are the LoadIndexBM25AndFAISS Agent."
+                    "You will receive a path to the BM25 index ('bm25_index_path') and a path to the FAISS index ('faiss_index_path')."
+                    "Your ONLY task is to load the BM25 and FAISS indexes using the 'load_index_bm25_and_faiss' tool. ",    
+        tools=[load_index_bm25_and_faiss],
+        output_key="file_content"
+    )
+
+    bug_localization_BM25_and_FAISS_agent = Agent(
+        model=MY_MODEL,
+        name="bug_localization_BM25_and_FAISS_agent",
+        instruction="You are the BugLocalizationBM25AndFAISS Agent."
+                    "You will receive the output ('result') of the 'processBugReportContent_agent'."
+                    "You will also receive a number ('top_n') which is the number of keywords to extract."
+                    "You will also receive a BM25 index ('bm25_index') and a FAISS index ('faiss_index') from the 'load_index_bm25_and_faiss_agent'."
+                    "Your ONLY task is to localize the bug report using the 'bug_localization_BM25_and_FAISS' tool. ",
+        tools=[bug_localization_BM25_and_FAISS],
+        output_key="file_content"
+    )
 except Exception as e:
     print(f"Self-test failed for agent setup. Error: {e}")
