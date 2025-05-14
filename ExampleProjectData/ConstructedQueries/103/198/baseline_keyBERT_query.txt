@@ -1,0 +1,1 @@
+set rogue prerequisites default repository documentation visibility cursory hide column
