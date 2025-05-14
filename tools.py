@@ -69,11 +69,12 @@ def processBugReportContent(bug_report_content: str) -> str:
     #print(query)
     return query 
 
-def processBugRepotQueryKeyBERT(process_content: str) -> str:
+def processBugRepotQueryKeyBERT(process_content: str, top_n: int) -> str:
     """Processes the content of a bug report using KeyBERT and returns it as a string.
 
     Args:
         process_content (str): The content to process.
+        top_n (int): The number of keywords to extract.
 
     Returns:
         str: The processed content.
@@ -81,7 +82,7 @@ def processBugRepotQueryKeyBERT(process_content: str) -> str:
     print("Processing content with KeyBERT..."+str(process_content))
     sentence_model = SentenceTransformer("all-MiniLM-L6-v2")
     kw_model = KeyBERT(model=sentence_model)
-    keywords_query = kw_model.extract_keywords(process_content, keyphrase_ngram_range=(1, 1), stop_words='english', use_maxsum=True, top_n=10)
+    keywords_query = kw_model.extract_keywords(process_content, keyphrase_ngram_range=(1, 1), stop_words='english', use_maxsum=True, top_n=top_n)
     keywords_query = [word for word, _ in keywords_query]
     keywords_query = [word for word in keywords_query if len(word) >= 3]
 
