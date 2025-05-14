@@ -52,7 +52,7 @@ try:
         model=MY_MODEL,
         name="readBugReportContent_agent",
         instruction="""You are the ReadBugReportContent Agent.
-        The user will provide a folder path and filename. Your task is to read the content of the file.
+        The user will provide a folder path. Your task is to read the content of the files inside the folder.
         Use the tool 'readFile' to do this and return the file content as a string.""",
         tools=[readFile],
         output_key="file_content"
@@ -74,6 +74,7 @@ try:
         name="process_bug_report_query_keybert_agent",          
         instruction="You are the ProcessBugReportQueryKeyBERT Agent."
                     "You will receive the output ('result') of the 'processBugReportContent_agent'."
+                    "You will also receive a number ('top_n') which is the number of keywords to extract."
                     "Your ONLY task is to process that content and return it as a string."
                     "Use the 'processBugRepotQueryKeyBERT' tool to perform this action. ",    
         tools=[processBugRepotQueryKeyBERT], # List of tools the agent can use
