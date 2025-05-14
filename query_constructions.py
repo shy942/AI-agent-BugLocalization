@@ -52,7 +52,8 @@ def construct_queries_for_project(project_id, bug_reports_root, queries_output_r
         # Step 3: generate queries and save
         baseline_keywords = processBugRepotQueryKeyBERT_agent.run(baseline_processed).get("file_content", [])
         if isinstance(baseline_keywords, list):
-            baseline_query = baseline_processed + " " + " ".join(baseline_keywords)
+            #baseline_query = baseline_processed + " " + " ".join(baseline_keywords)
+            baseline_query = " ".join(baseline_keywords)
         else:
             baseline_query = str(baseline_keywords)
 
@@ -71,7 +72,8 @@ def construct_queries_for_project(project_id, bug_reports_root, queries_output_r
         # Step 3: generate queries and save
         extended_keywords = processBugRepotQueryKeyBERT_agent.run(extended_processed).get("file_content", [])
         if isinstance(extended_keywords, list):
-            extended_query = extended_processed + " " + " ".join(extended_keywords)
+            #extended_query = extended_processed + " " + " ".join(extended_keywords)
+            extended_query = " ".join(extended_keywords)
         else:
             extended_query = str(extended_keywords)
 
