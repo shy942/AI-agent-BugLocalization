@@ -1,5 +1,5 @@
 # Agent class for simplicity
-from tools import readFile, processBugReportContent, preprocess_text, load_stopwords, processBugRepotQueryKeyBERT
+from tools import readFile, processBugReportContent, preprocess_text, load_stopwords, processBugReportQueryKeyBERT
 from litellm import completion
 from typing import Callable
 
@@ -29,7 +29,7 @@ Now decide which tool to use.
             elif self.name == "process_bug_report_content_agent":
                 tool_output = self.tools["processBugReportContent"](*args)
             elif self.name == "process_bug_report_query_keybert_agent":
-                tool_output = self.tools["processBugRepotQueryKeyBERT"](*args)
+                tool_output = self.tools["processBugReportQueryKeyBERT"](*args)
             #elif self.name == "source_code_preprocessing_agent":
             #    tool_output = self.tools["source_code_preprocessing"](*args)
             #elif self.name == "hybrid_retrieve_agent":
@@ -69,15 +69,15 @@ try:
         output_key="file_content"
     )
 
-    processBugRepotQueryKeyBERT_agent = Agent(       
+    processBugReportQueryKeyBERT_agent = Agent(       
         model=MY_MODEL,
         name="process_bug_report_query_keybert_agent",          
         instruction="You are the ProcessBugReportQueryKeyBERT Agent."
                     "You will receive the output ('result') of the 'processBugReportContent_agent'."
                     "You will also receive a number ('top_n') which is the number of keywords to extract."
                     "Your ONLY task is to process that content and return it as a string."
-                    "Use the 'processBugRepotQueryKeyBERT' tool to perform this action. ",    
-        tools=[processBugRepotQueryKeyBERT], # List of tools the agent can use
+                    "Use the 'processBugReportQueryKeyBERT' tool to perform this action. ",    
+        tools=[processBugReportQueryKeyBERT], # List of tools the agent can use
         output_key="file_content" # Specify the output key for the tool's result
         )
 except Exception as e:

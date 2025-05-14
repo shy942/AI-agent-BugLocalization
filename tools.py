@@ -69,7 +69,7 @@ def processBugReportContent(bug_report_content: str) -> str:
     #print(query)
     return query 
 
-def processBugRepotQueryKeyBERT(process_content: str, top_n: int) -> str:
+def processBugReportQueryKeyBERT(process_content: str, top_n: int) -> str:
     """Processes the content of a bug report using KeyBERT and returns it as a string.
 
     Args:
