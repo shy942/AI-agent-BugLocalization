@@ -1,21 +1,30 @@
 import os
+import pickle
+from rank_bm25 import BM25Okapi
 from query_constructions import (
     load_image_content
 )
 from agents import (
     readBugReportContent_agent,
     processBugReportContent_agent,
-    processBugRepotQueryKeyBERT_agent
+    processBugRepotQueryKeyBERT_agent,
+    index_source_code_agent,
+    load_index_bm25_and_faiss_agent,
+    bug_localization_BM25_and_FAISS_agent
 )
 
     
 
-def main_manager(project_id, bug_reports_root, queries_output_root):
+def main_manager(project_id, bug_reports_root, queries_output_root, source_code_dir):
     project_bug_path = os.path.join(bug_reports_root, project_id)
     project_query_path = os.path.join(queries_output_root, project_id)
     os.makedirs(project_query_path, exist_ok=True)
     top_n = 10
+    count = 0
     for bug_id in os.listdir(project_bug_path):
+        count += 1
+        if count > 1:
+            break
         bug_dir = os.path.join(project_bug_path, bug_id)
         if not os.path.isdir(bug_dir):
             continue
@@ -68,10 +77,20 @@ def main_manager(project_id, bug_reports_root, queries_output_root):
 
         print(f" Saved: {output_dir}")
 
+        # === BUG LOCALIZATION ===
+        # Load BM25 and FAISS indexes
+        bm25_index, faiss_index = load_index_bm25_and_faiss_agent.run("./bm25_index.pkl", "./faiss_index_dir").get("file_content", "")
+      
+        # Localize bug report
+        bug_localization_BM25_and_FAISS_agent.run(extended_query, top_n, bm25_index, faiss_index)
+
 
 if __name__ == "__main__":
     project_id = "103"
     BugReportPath = os.path.expanduser("./ExampleProjectData/ProjectBugReports/")
     SearchQueryPath = os.path.expanduser("./ExampleProjectData/ConstructedQueries/")
+    SourceCodeDir = os.path.expanduser("./ExampleProjectData/SourceCodes/Project103/tables/src/")
+    # Index source code
+    index_source_code_agent.run(SourceCodeDir).get("file_content", "")
 
-    main_manager(project_id, BugReportPath, SearchQueryPath)
+    main_manager(project_id, BugReportPath, SearchQueryPath, SourceCodeDir)
