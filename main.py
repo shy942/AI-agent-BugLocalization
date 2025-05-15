@@ -4,7 +4,7 @@ from query_constructions import load_image_content
 from agents import (
     readBugReportContent_agent,
     processBugReportContent_agent,
-    processBugRepotQueryKeyBERT_agent,
+    processBugReportQueryKeyBERT_agent,
     index_source_code_agent,
     load_index_bm25_and_faiss_agent,
     bug_localization_BM25_and_FAISS_agent
@@ -44,11 +44,11 @@ async def keybert_worker(output_base, top_n):
         bug_dir, bug_id, baseline_processed, extended_processed, raw = await keybert_queue.get()
 
         # === Baseline ===
-        keywords = processBugRepotQueryKeyBERT_agent.run(baseline_processed, top_n).get("file_content", [])
+        keywords = processBugReportQueryKeyBERT_agent.run(baseline_processed, top_n).get("file_content", [])
         baseline_query = " ".join(keywords) if isinstance(keywords, list) else str(keywords)
 
         # === Extended ===
-        extended_keywords = processBugRepotQueryKeyBERT_agent.run(extended_processed, top_n).get("file_content", [])
+        extended_keywords = processBugReportQueryKeyBERT_agent.run(extended_processed, top_n).get("file_content", [])
         extended_query = " ".join(extended_keywords) if isinstance(extended_keywords, list) else str(extended_keywords)
 
         output_dir = os.path.join(output_base, bug_id)
