@@ -6,7 +6,6 @@ from agents import (
     processBugReportContent_agent,
     processBugReportQueryKeyBERT_agent,
     index_source_code_agent,
-    load_index_bm25_and_faiss_agent,
     bug_localization_BM25_and_FAISS_agent
 )
 
@@ -19,6 +18,10 @@ localization_queue = asyncio.Queue()
 # Shared index data
 bm25_index = None
 faiss_index = None
+bm25_weight = 0.3
+faiss_weight = 0.7
+top_n = 10 # Number of top keywords to retrieve
+top_n_documents = 100 # Number of top documents to retrieve, but default is 100
 
 async def read_worker():
     '''Reads title + description from bug report folder'''
@@ -60,26 +63,46 @@ async def keybert_worker(output_base, top_n):
             f.write(extended_query)
 
         print(f" Saved: {output_dir}")
+        await localization_queue.put((baseline_query, bug_id))
         await localization_queue.put((extended_query, bug_id))
         keybert_queue.task_done()
 
-async def localize_worker(top_n):
+async def localize_worker(search_result_base, top_n_documents, processed_documents):
     '''Runs BM25+FAISS localization on extended queries'''
     while True:
-        extended_query, bug_id = await localization_queue.get()
-        bug_localization_BM25_and_FAISS_agent.run(extended_query, top_n, bm25_index, faiss_index)
-        print(f" Localized bug {bug_id}")
+        # === Baseline ===
+        baseline_query, bug_id = await localization_queue.get()
+        baseline_search_results = bug_localization_BM25_and_FAISS_agent.run(bug_id, baseline_query, top_n_documents, bm25_index, faiss_index, 
+                                                                           processed_documents, bm25_weight, faiss_weight).get("file_content", "")
+        output_dir = os.path.join(search_result_base, bug_id)
+        os.makedirs(output_dir, exist_ok=True)
+        with open(os.path.join(output_dir, f"{bug_id}_baseline_keyBERT_query_result.txt"), "w", encoding="utf-8") as f:
+            f.write(baseline_search_results)
+        print(f" Localized bug {bug_id} for baseline query")
         localization_queue.task_done()
 
-async def main_async(project_id, bug_reports_root, queries_output_root, index_paths, top_n=10):
+        # === Extended ===
+        extended_query, bug_id = await localization_queue.get()
+        extended_search_results = bug_localization_BM25_and_FAISS_agent.run(bug_id, extended_query, top_n_documents, bm25_index, faiss_index, 
+                                                                  processed_documents, bm25_weight, faiss_weight).get("file_content", "")
+        with open(os.path.join(output_dir, f"{bug_id}_extended_keyBERT_query_result.txt"), "w", encoding="utf-8") as f:
+            f.write(extended_search_results)
+        print(f" Localized bug {bug_id} for extended query")
+        localization_queue.task_done()
+         
+
+async def main_async(project_id, bug_reports_root, queries_output_root, search_result_path):
     global bm25_index, faiss_index
 
-    # Load precomputed indexes 
-    bm25_index, faiss_index = load_index_bm25_and_faiss_agent.run(*index_paths).get("file_content", "")
+    # index source code and load indexes (bm25_index, faiss_index) and processed documents
+    bm25_index, faiss_index, processed_documents = index_source_code_agent.run(SourceCodeDir).get("file_content", "")
+    top_n_documents = len(processed_documents) # Number of top documents to retrieve, but default is 100
 
     bug_path = os.path.join(bug_reports_root, project_id)
     output_base = os.path.join(queries_output_root, project_id)
     os.makedirs(output_base, exist_ok=True)
+    search_results_base = os.path.join(search_result_path, project_id)
+    os.makedirs(search_results_base, exist_ok=True)
 
     # Fill read queue with bug IDs
     for bug_id in os.listdir(bug_path):
@@ -92,7 +115,7 @@ async def main_async(project_id, bug_reports_root, queries_output_root, index_pa
         asyncio.create_task(read_worker()),
         asyncio.create_task(process_worker()),
         asyncio.create_task(keybert_worker(output_base, top_n)),
-        asyncio.create_task(localize_worker(top_n))
+        asyncio.create_task(localize_worker(search_results_base, top_n_documents, processed_documents))
     ]
 
     # Wait for all queues to finish
@@ -110,10 +133,6 @@ if __name__ == "__main__":
     BugReportPath = os.path.expanduser("./ExampleProjectData/ProjectBugReports/")
     SearchQueryPath = os.path.expanduser("./ExampleProjectData/ConstructedQueries/")
     SourceCodeDir = os.path.expanduser("./ExampleProjectData/SourceCodes/Project103/tables/src/")
-
-    # Generate indexes, I think this optional here if it's precomputed
-    index_source_code_agent.run(SourceCodeDir).get("file_content", "")
-    bm25_path = "./bm25_index.pkl"
-    faiss_path = "./faiss_index_dir"
-
-    asyncio.run(main_async(project_id, BugReportPath, SearchQueryPath, (bm25_path, faiss_path)))
+    SearchResultPath = os.path.expanduser("./ExampleProjectData/SearchResults/")
+    
+    asyncio.run(main_async(project_id, BugReportPath, SearchQueryPath, SearchResultPath))
