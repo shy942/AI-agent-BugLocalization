@@ -1,7 +1,7 @@
 # Agent class for simplicity
 from tools import (
     readFile, processBugReportContent, preprocess_text, load_stopwords, processBugReportQueryKeyBERT, 
-    index_source_code, bug_localization_BM25_and_FAISS, load_index_bm25_and_faiss
+    index_source_code, bug_localization_BM25_and_FAISS, get_short_filename
 )
 from litellm import completion
 from typing import Callable
@@ -35,12 +35,8 @@ Now decide which tool to use.
                 tool_output = self.tools["processBugReportQueryKeyBERT"](*args)
             elif self.name == "index_source_code_agent":
                 tool_output = self.tools["index_source_code"](*args)
-            elif self.name == "load_index_bm25_and_faiss_agent":
-                tool_output = self.tools["load_index_bm25_and_faiss"](*args)
             elif self.name == "bug_localization_BM25_and_FAISS_agent":
                 tool_output = self.tools["bug_localization_BM25_and_FAISS"](*args)
-            #elif self.name == "hybrid_retrieve_agent":
-            #    tool_output = self.tools["hybrid_retrieve"](*args)
             else:
                 tool_output = "Unknown agent."
 
@@ -91,32 +87,24 @@ try:
     index_source_code_agent = Agent(
         model=MY_MODEL,
         name="index_source_code_agent",
-        instruction="You are the IndexSourceCode Agent."
-                    "You will receive a folder path ('source_code_dir') which is the path to the source code."
-                    "Your ONLY task is to index the source code using the 'index_source_code' tool. ",
+        instruction="You are the IndexSourceCode Agent. "
+                    "You will receive a folder path ('source_code_dir') which is the path to the source code. "
+                    "Your ONLY task is to index the source code using the 'index_source_code' tool. "
+                    "Your output will be the a BM25 index ('bm25_index') and a FAISS index ('faiss_index') and the  processed documents ('processed_documents') from the 'index_source_code' tool.",
         tools=[index_source_code],
         output_key="file_content"
     )
     
-    load_index_bm25_and_faiss_agent = Agent(
-        model=MY_MODEL,
-        name="load_index_bm25_and_faiss_agent",
-        instruction="You are the LoadIndexBM25AndFAISS Agent."
-                    "You will receive a path to the BM25 index ('bm25_index_path') and a path to the FAISS index ('faiss_index_path')."
-                    "Your ONLY task is to load the BM25 and FAISS indexes using the 'load_index_bm25_and_faiss' tool. ",    
-        tools=[load_index_bm25_and_faiss],
-        output_key="file_content"
-    )
-
     bug_localization_BM25_and_FAISS_agent = Agent(
         model=MY_MODEL,
         name="bug_localization_BM25_and_FAISS_agent",
-        instruction="You are the BugLocalizationBM25AndFAISS Agent."
-                    "You will receive the output ('result') of the 'processBugReportContent_agent'."
-                    "You will also receive a number ('top_n') which is the number of keywords to extract."
-                    "You will also receive a BM25 index ('bm25_index') and a FAISS index ('faiss_index') from the 'load_index_bm25_and_faiss_agent'."
-                    "Your ONLY task is to localize the bug report using the 'bug_localization_BM25_and_FAISS' tool. ",
-        tools=[bug_localization_BM25_and_FAISS],
+        instruction="You are the BugLocalizationBM25AndFAISS Agent. "
+                    "You will receive the output ('result') of the 'processBugReportContent_agent'. "
+                    "You will also receive a number ('top_n') which is the number of keywords to extract. "
+                    "You will also receive a BM25 index ('bm25_index') and a FAISS index ('faiss_index') from the 'load_index_bm25_and_faiss_agent'. "
+                    "Your ONLY task is to localize the bug report using the 'bug_localization_BM25_and_FAISS' tool. "
+                    "Format the output as a string with each result on a new line.",
+        tools=[bug_localization_BM25_and_FAISS, get_short_filename],
         output_key="file_content"
     )
 except Exception as e:
