@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+      - ./faiss_index_dir:/app/faiss_index_dir
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ./run.sh 
