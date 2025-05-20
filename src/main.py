@@ -10,10 +10,9 @@ from agents import (
 )
 
 # Queues between pipeline stages
-read_queue = asyncio.Queue()
-process_queue = asyncio.Queue()
-keybert_queue = asyncio.Queue()
-localization_queue = asyncio.Queue()
+# ─── globals (just placeholders) ────────────────────────────────────────────
+read_queue = process_queue = keybert_queue = localization_queue = None
+
 
 # Shared index data
 bm25_index = None
@@ -121,8 +120,12 @@ async def localize_worker(search_base, top_n_documents, processed_documents):
         localization_queue.task_done()
 
 async def main_async(project_id, bug_reports_root, queries_output_root, search_result_path):
+    global read_queue, process_queue, keybert_queue, localization_queue
     global bm25_index, faiss_index
-
+    read_queue         = asyncio.Queue()
+    process_queue      = asyncio.Queue()
+    keybert_queue      = asyncio.Queue()
+    localization_queue = asyncio.Queue()
     # index source code and load indexes (bm25_index, faiss_index) and processed documents
     bm25_index, faiss_index, processed_documents = index_source_code_agent.run(SourceCodeDir).get("file_content", "")
     top_n_documents = len(processed_documents) # Number of top documents to retrieve, but default is 100
