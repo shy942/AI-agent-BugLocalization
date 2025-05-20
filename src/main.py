@@ -9,8 +9,7 @@ from agents import (
     bug_localization_BM25_and_FAISS_agent
 )
 
-# Queues between pipeline stages
-# ─── globals (just placeholders) ────────────────────────────────────────────
+# Queues between pipeline stages, initialized in main_async
 read_queue = process_queue = keybert_queue = localization_queue = None
 
 
