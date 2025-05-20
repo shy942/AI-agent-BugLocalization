@@ -1,5 +1,5 @@
 import os
-import asyncio
+import asyncio, functools, time
 from query_constructions import load_image_content
 from agents import (
     readBugReportContent_agent,
@@ -23,11 +23,30 @@ faiss_weight = 0.7
 top_n = 10 # Number of top keywords to retrieve
 top_n_documents = 100 # Number of top documents to retrieve, but default is 100
 
+
+
+# Helper : run blocking CPU-bound code in a thread
+async def run_blocking(fn, *args, **kw):
+    loop = asyncio.get_running_loop()
+    part = functools.partial(fn, *args, **kw)
+    return await loop.run_in_executor(None, part)
+
+
+log_lock = asyncio.Lock()
+async def log_event(tag, bug_id, stage):
+    ts = time.strftime("%H:%M:%S", time.localtime())
+    line = f"[{ts}] [{tag}] Bug {bug_id} at stage: {stage}\n"
+    async with log_lock:
+        with open("pipeline_log.txt", "a", encoding="utf-8") as f:
+            f.write(line)
+
 async def read_worker():
     '''Reads title + description from bug report folder'''
     while True:
         bug_dir, bug_id = await read_queue.get()
+        await log_event("READ", bug_id, "start")
         raw = readBugReportContent_agent.run(bug_dir).get("file_content", "")
+        await log_event("READ", bug_id, "done")
         await process_queue.put((bug_dir, bug_id, raw))
         read_queue.task_done()
 
@@ -35,9 +54,11 @@ async def process_worker():
     '''Processes baseline and extended content'''
     while True:
         bug_dir, bug_id, raw = await process_queue.get()
+        await log_event("PROCESS", bug_id, "start")
         processed = processBugReportContent_agent.run(raw).get("file_content", "")
         extended_raw = raw + "\n" + load_image_content(bug_dir, bug_id)
         extended_processed = processBugReportContent_agent.run(extended_raw).get("file_content", "")
+        await log_event("PROCESS", bug_id, "done")
         await keybert_queue.put((bug_dir, bug_id, processed, extended_processed, raw))
         process_queue.task_done()
 
@@ -45,51 +66,59 @@ async def keybert_worker(output_base, top_n):
     '''Extracts keywords for both baseline and extended queries and writes them to disk'''
     while True:
         bug_dir, bug_id, baseline_processed, extended_processed, raw = await keybert_queue.get()
+        await log_event("KEYBERT", bug_id, "start")
 
         # === Baseline ===
-        keywords = processBugReportQueryKeyBERT_agent.run(baseline_processed, top_n).get("file_content", [])
-        baseline_query = " ".join(keywords) if isinstance(keywords, list) else str(keywords)
+        keywords = await run_blocking(processBugReportQueryKeyBERT_agent.run, baseline_processed, top_n)
+        baseline_query = " ".join(keywords.get("file_content", [])) 
 
         # === Extended ===
-        extended_keywords = processBugReportQueryKeyBERT_agent.run(extended_processed, top_n).get("file_content", [])
-        extended_query = " ".join(extended_keywords) if isinstance(extended_keywords, list) else str(extended_keywords)
+        extended_keywords = await run_blocking(processBugReportQueryKeyBERT_agent.run, extended_processed, top_n)
+        extended_query = " ".join(extended_keywords.get("file_content", [])) 
 
         output_dir = os.path.join(output_base, bug_id)
         os.makedirs(output_dir, exist_ok=True)
-
         with open(os.path.join(output_dir, "baseline_keyBERT_query.txt"), "w", encoding="utf-8") as f:
             f.write(baseline_query)
         with open(os.path.join(output_dir, "extended_keyBERT_query.txt"), "w", encoding="utf-8") as f:
             f.write(extended_query)
 
-        print(f" Saved: {output_dir}")
-        await localization_queue.put((baseline_query, bug_id))
-        await localization_queue.put((extended_query, bug_id))
+        await log_event("KEYBERT", bug_id, "done")
+        await localization_queue.put((bug_id, baseline_query, extended_query))
         keybert_queue.task_done()
 
-async def localize_worker(search_result_base, top_n_documents, processed_documents):
+async def localize_worker(search_base, top_n_documents, processed_documents):
     '''Runs BM25+FAISS localization on extended queries'''
     while True:
-        # === Baseline ===
-        baseline_query, bug_id = await localization_queue.get()
-        baseline_search_results = bug_localization_BM25_and_FAISS_agent.run(bug_id, baseline_query, top_n_documents, bm25_index, faiss_index, 
-                                                                           processed_documents, bm25_weight, faiss_weight).get("file_content", "")
-        output_dir = os.path.join(search_result_base, bug_id)
-        os.makedirs(output_dir, exist_ok=True)
-        with open(os.path.join(output_dir, f"{bug_id}_baseline_keyBERT_query_result.txt"), "w", encoding="utf-8") as f:
-            f.write(baseline_search_results)
-        print(f" Localized bug {bug_id} for baseline query")
-        localization_queue.task_done()
+        bug_id, baseline_q, extended_q = await localization_queue.get()
 
-        # === Extended ===
-        extended_query, bug_id = await localization_queue.get()
-        extended_search_results = bug_localization_BM25_and_FAISS_agent.run(bug_id, extended_query, top_n_documents, bm25_index, faiss_index, 
-                                                                  processed_documents, bm25_weight, faiss_weight).get("file_content", "")
-        with open(os.path.join(output_dir, f"{bug_id}_extended_keyBERT_query_result.txt"), "w", encoding="utf-8") as f:
-            f.write(extended_search_results)
-        print(f" Localized bug {bug_id} for extended query")
+        await log_event("LOCALIZE", bug_id, "baseline start")
+        baseline_search_results = await run_blocking(
+            bug_localization_BM25_and_FAISS_agent.run,
+            bug_id, baseline_q, top_n_documents,
+            bm25_index, faiss_index, processed_documents,
+            bm25_weight, faiss_weight
+        )
+
+        out_dir = os.path.join(search_base, bug_id)
+        os.makedirs(out_dir, exist_ok=True)
+        with open(os.path.join(out_dir, f"{bug_id}_baseline_keyBERT_query_result.txt"),
+                  "w", encoding="utf-8") as f:
+            f.write(baseline_search_results.get("file_content", ""))
+        await log_event("LOCALIZE", bug_id, "baseline done")
+
+        await log_event("LOCALIZE", bug_id, "extended start")
+        extended_search_results = await run_blocking(
+            bug_localization_BM25_and_FAISS_agent.run,
+            bug_id, extended_q, top_n_documents,
+            bm25_index, faiss_index, processed_documents,
+            bm25_weight, faiss_weight
+        )
+        with open(os.path.join(out_dir, f"{bug_id}_extended_keyBERT_query_result.txt"),
+                  "w", encoding="utf-8") as f:
+            f.write(extended_search_results.get("file_content", ""))
+        await log_event("LOCALIZE", bug_id, "extended done")
         localization_queue.task_done()
-         
 
 async def main_async(project_id, bug_reports_root, queries_output_root, search_result_path):
     global bm25_index, faiss_index
@@ -103,6 +132,7 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
     os.makedirs(output_base, exist_ok=True)
     search_results_base = os.path.join(search_result_path, project_id)
     os.makedirs(search_results_base, exist_ok=True)
+    open("pipeline_log.txt", "w").close()
 
     # Fill read queue with bug IDs
     for bug_id in os.listdir(bug_path):
@@ -115,9 +145,8 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
         asyncio.create_task(read_worker()),
         asyncio.create_task(process_worker()),
         asyncio.create_task(keybert_worker(output_base, top_n)),
-        asyncio.create_task(localize_worker(search_results_base, top_n_documents, processed_documents))
+        *[asyncio.create_task(localize_worker(search_results_base, top_n_documents, processed_documents)) for _ in range(4)],
     ]
-
     # Wait for all queues to finish
     await read_queue.join()
     await process_queue.join()
@@ -127,6 +156,7 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
     # Finish
     for w in workers:
         w.cancel()
+
 
 if __name__ == "__main__":
     project_id = "103"
