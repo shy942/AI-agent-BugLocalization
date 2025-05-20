@@ -171,7 +171,7 @@ def index_source_code(source_code_dir: str) -> str:
     faiss_index_dir = "faiss_index_dir"
 
     # Check if index already exists
-    if os.path.exists(faiss_index_dir):
+    if os.path.exists(faiss_index_dir) and os.listdir(faiss_index_dir):
         print("FAISS index already exists. Loading it...")
         faiss_index = FAISS.load_local(faiss_index_dir, hf_embedder, allow_dangerous_deserialization=True)
     else:
