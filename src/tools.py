@@ -130,7 +130,7 @@ def processBugReportQueryReasoning(bug_report_content: str) -> str:
     # Call your model (adjust according to your framework)
     response = openai.ChatCompletion.create(
         model="gpt-4",
-        api_key="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",
+        api_key="",
         messages=[
             {"role": "system", "content": "You are a professional software test engineer."},
             {"role": "user", "content": prompt}
