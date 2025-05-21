@@ -3,6 +3,7 @@
 import os
 import regex
 import pickle
+import openai
 import numpy as np
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
@@ -97,6 +98,47 @@ def processBugReportQueryKeyBERT(process_content: str, top_n: int) -> str:
     print("Keywords extracted: ", keywords_query)   
 
     return keywords_query
+
+def processBugReportQueryReasoning(bug_report_content: str) -> str:
+    """
+    Use an LLM to analyze and summarize a bug report,
+    including the functionality that triggers the bug.
+
+    
+    Args:
+        bug_report_content (str): The content to process.
+
+    Returns:
+        str: The reasoning content.
+    """
+
+    if not bug_report_content or not isinstance(bug_report_content, str):
+        return "Invalid bug report content."
+
+    prompt = f"""
+    You are a software test engineer. Given the following bug report:
+
+    \"\"\"{bug_report_content}\"\"\"
+
+    1. Summarize the main issue described.
+    2. Explain the functionality the user executed before encountering the issue.
+    Only provide the keywords, separated by commas, both summary and functionality in one line. 
+    Do not include any other text, or numbers (such as 1, 2, 3, etc.).
+    Duplicate keywords are allowed.
+    """
+
+    # Call your model (adjust according to your framework)
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        api_key="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",
+        messages=[
+            {"role": "system", "content": "You are a professional software test engineer."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.3,
+    )
+
+    return response["choices"][0]["message"]["content"].strip()
 
 def index_source_code(source_code_dir: str) -> str:
     documents = []  # from DirectoryLoader, etc.
