@@ -84,6 +84,17 @@ try:
         output_key="file_content" # Specify the output key for the tool's result
         )
     
+    processBugReportQueryReasoning_agent = Agent(
+        model=MY_MODEL,     
+        name="process_bug_report_query_reasoning_agent",
+        instruction="You are the ProcessBugReportQueryReasoning Agent."
+                    "You will receive the output ('result') of the 'readBugReportContent_agent'."
+                    "Your ONLY task is to process that content using LLM and return it as a string."
+                    "Use the 'processBugReportQueryKeyBERT' tool to perform this action. ",
+        tools=[processBugReportQueryKeyBERT], # List of tools the agent can use     
+        output_key="file_content" # Specify the output key for the tool's result
+        )
+
     index_source_code_agent = Agent(
         model=MY_MODEL,
         name="index_source_code_agent",
