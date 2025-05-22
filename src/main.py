@@ -29,7 +29,7 @@ async def run_blocking(fn, *args, **kw):
     part = functools.partial(fn, *args, **kw)
     return await loop.run_in_executor(None, part)
 
-
+#Helper: Log events to the pipeline_log.txt file
 log_lock = asyncio.Lock()
 async def log_event(tag, bug_id, stage):
     ts = time.strftime("%H:%M:%S", time.localtime())
@@ -44,26 +44,26 @@ async def read_worker():
         bug_dir, bug_id = await read_queue.get()
         await log_event("READ", bug_id, "start")
         raw = readBugReportContent_agent.run(bug_dir).get("file_content", "")
+        extended_raw = raw + "\n" + load_image_content(bug_dir, bug_id)
         await log_event("READ", bug_id, "done")
-        await process_queue.put((bug_dir, bug_id, raw))
+        await process_queue.put((bug_dir, bug_id, raw, extended_raw))
         read_queue.task_done()
 
 async def process_worker():
     '''Processes baseline and extended content'''
     while True:
-        bug_dir, bug_id, raw = await process_queue.get()
+        bug_dir, bug_id, raw, extended_raw= await process_queue.get()
         await log_event("PROCESS", bug_id, "start")
         processed = processBugReportContent_agent.run(raw).get("file_content", "")
-        extended_raw = raw + "\n" + load_image_content(bug_dir, bug_id)
         extended_processed = processBugReportContent_agent.run(extended_raw).get("file_content", "")
         await log_event("PROCESS", bug_id, "done")
-        await keybert_queue.put((bug_dir, bug_id, processed, extended_processed, raw))
+        await keybert_queue.put((bug_dir, bug_id, processed, extended_processed))
         process_queue.task_done()
 
 async def keybert_worker(output_base, top_n):
     '''Extracts keywords for both baseline and extended queries and writes them to disk'''
     while True:
-        bug_dir, bug_id, baseline_processed, extended_processed, raw = await keybert_queue.get()
+        bug_dir, bug_id, baseline_processed, extended_processed= await keybert_queue.get()
         await log_event("KEYBERT", bug_id, "start")
 
         # === Baseline ===

@@ -52,7 +52,6 @@ Now decide which tool to use.
 # Initialize the agents
 try:
     MY_MODEL = completion  # liteLLM wrapper (can be your own callable model)
-    #need to update this block coz now readFile only takes the directory path
     readBugReportContent_agent = Agent(
         model=MY_MODEL,
         name="readBugReportContent_agent",
@@ -92,7 +91,7 @@ try:
         instruction="You are the ProcessBugReportQueryReasoning Agent."
                     "You will receive the output ('result') of the 'readBugReportContent_agent'."
                     "Your ONLY task is to process that content using LLM and return it as a string."
-                    "Use the 'processBugReportQueryKeyBERT' tool to perform this action. ",
+                    "Use the 'processBugReportQueryReasoning' tool to perform this action. ",
         tools=[processBugReportQueryReasoning], # List of tools the agent can use     
         output_key="file_content" # Specify the output key for the tool's result
         )
