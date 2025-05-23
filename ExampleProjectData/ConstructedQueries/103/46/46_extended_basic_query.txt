@@ -1,0 +1,1 @@
+money values rendered correctly choose bug description column defined label data money symbol format precision decimal meta searchable sortable total database output steps reproduce expected behavior output actual behavior output
