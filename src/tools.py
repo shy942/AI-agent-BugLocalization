@@ -4,6 +4,7 @@ import os
 import regex
 import pickle
 import openai
+import litellm
 import numpy as np
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
@@ -14,6 +15,9 @@ from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
+import sys
+import io
+
 
 def readFile(folder_path: str) -> str:
     """Reads title.txt + description.txt """
@@ -78,6 +82,23 @@ def processBugReportContent(bug_report_content: str) -> str:
     #print(query)
     return query 
 
+def processBugReportContentPostReasoning(bug_report_reasoning_content: str) -> str:
+    """Processes the content of a bug report and returns it as a string.
+
+    Args:
+        bug_report_reasoning_content (str): The content to process.
+
+    Returns:
+        str: The processed content of the bug report.
+    """
+    print("Processing content with post reasoning..."+str(bug_report_reasoning_content))
+    cleaned = bug_report_reasoning_content.replace("Main issue:", "").replace("Functionality:", "").replace("Summary:", "").strip()
+
+    # Read the content of the bug report
+    query=preprocess_text(cleaned)
+    #print(query)
+    return query     
+
 def processBugReportQueryKeyBERT(process_content: str, top_n: int) -> str:
     """Processes the content of a bug report using KeyBERT and returns it as a string.
 
@@ -100,6 +121,8 @@ def processBugReportQueryKeyBERT(process_content: str, top_n: int) -> str:
     return keywords_query
 
 def processBugReportQueryReasoning(bug_report_content: str) -> str:
+    sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='utf-8')
+
     """
     Use an LLM to analyze and summarize a bug report,
     including the functionality that triggers the bug.
@@ -122,29 +145,25 @@ def processBugReportQueryReasoning(bug_report_content: str) -> str:
 
     1. Summarize the main issue described.
     2. Explain the functionality the user executed before encountering the issue.
-    Only provide the keywords, separated by commas, both summary and functionality in one line. 
+    Only provide the keywords for both summary and functionality in one line. 
     Do not include any other text, or numbers (such as 1, 2, 3, etc.).
     Duplicate keywords are allowed.
     """
 
-    # Call your model (adjust according to your framework)
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
+    response = litellm.completion(
+        model="huggingface/HuggingFaceH4/zephyr-7b-beta",
         api_key="",
-        messages=[
-            {"role": "system", "content": "You are a professional software test engineer."},
-            {"role": "user", "content": prompt}
-        ],
+        messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
+        max_tokens=512
     )
-
     return response["choices"][0]["message"]["content"].strip()
 
 def index_source_code(source_code_dir: str) -> str:
     documents = []  # from DirectoryLoader, etc.
     # Load source code files (recursively from a folder)
     source_code_dir = source_code_dir  # Folder with 1000 source code files
-    print("Indexing source code from: ", source_code_dir)
+    #print("Indexing source code from: ", source_code_dir)
     # List of extensions you want to include
     source_extensions = ["*.py", "*.cpp", "*.c", "*.h", "*.hpp", "*.java", "*.js", "*.ts", "*.cs", "*.go", "*.php","*.vue"]
     # Create loaders for each extension
@@ -177,7 +196,7 @@ def index_source_code(source_code_dir: str) -> str:
 
     # Save only the tokenized_corpus
     # Check if index already exists
-    index_path = "bm25_index.pkl"
+    index_path = "./bm25_index.pkl"
     if os.path.exists(index_path):
         print("Index exists. Loading from file...")
         with open(index_path, "rb") as f:
@@ -210,7 +229,7 @@ def index_source_code(source_code_dir: str) -> str:
     hf_embedder = HuggingFaceEmbeddings(model_name=model_name)
 
     # Define the FAISS index directory path
-    faiss_index_dir = "faiss_index_dir"
+    faiss_index_dir = "./faiss_index_dir"
 
     # Check if index already exists
     if os.path.exists(faiss_index_dir) and os.listdir(faiss_index_dir):

@@ -1,7 +1,7 @@
 # Agent class for simplicity
 from tools import (
     readFile, processBugReportContent, preprocess_text, load_stopwords, processBugReportQueryKeyBERT, processBugReportQueryReasoning,
-    index_source_code, bug_localization_BM25_and_FAISS, get_short_filename
+    processBugReportContentPostReasoning, index_source_code, bug_localization_BM25_and_FAISS, get_short_filename
 )
 from litellm import completion
 from typing import Callable
@@ -35,6 +35,8 @@ Now decide which tool to use.
                 tool_output = self.tools["processBugReportQueryKeyBERT"](*args)
             elif self.name == "process_bug_report_query_reasoning_agent":
                 tool_output = self.tools["processBugReportQueryReasoning"](*args)
+            elif self.name == "process_bug_report_content_agent_post_reasoning":
+                tool_output = self.tools["processBugReportContentPostReasoning"](*args)
             elif self.name == "index_source_code_agent":
                 tool_output = self.tools["index_source_code"](*args)
             elif self.name == "bug_localization_BM25_and_FAISS_agent":
@@ -72,6 +74,19 @@ try:
         tools=[processBugReportContent, preprocess_text, load_stopwords],
         output_key="file_content"
     )
+
+    processBugReportContentPostReasoning_agent = Agent(
+        model=MY_MODEL,
+        name="process_bug_report_content_agent_post_reasoning",
+        instruction="You are the processBugReportContentPostReasoning Agent."
+                    "You will receive the output ('result') of the 'processBugReportQueryReasoning_agent'."
+                    #"Your task is to discard 'Main issue:' from the first sentence and 'Functionality:' from the second sentece, and return the rest of the content as a string."
+                    "Your task is to process that content and return it as a string."
+                    "Use the 'processBugReportContentPostReasoning' tool to perform this process. ",  
+        tools=[processBugReportContentPostReasoning, preprocess_text, load_stopwords],
+        output_key="file_content"
+    )
+
 
     processBugReportQueryKeyBERT_agent = Agent(       
         model=MY_MODEL,
