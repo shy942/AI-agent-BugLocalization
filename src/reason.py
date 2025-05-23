@@ -52,18 +52,18 @@ async def process_worker(output_base):
     while True:
         bug_dir, bug_id, raw_reasoned, ext_reasoned = await process_queue.get()
         await log_event("PROCESS", bug_id, "start")
-        baseline_processed = processBugReportContentPostReasoning_agent.run(raw_reasoned).get("file_content", "")
-        extended_processed = processBugReportContentPostReasoning_agent.run(ext_reasoned).get("file_content", "")
+        baseline_query = processBugReportContentPostReasoning_agent.run(raw_reasoned).get("file_content", "")
+        extended_query = processBugReportContentPostReasoning_agent.run(ext_reasoned).get("file_content", "")
 
         out_dir = os.path.join(output_base, bug_id)
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
-            f.write(baseline_processed)
+            f.write(baseline_query)
         with open(os.path.join(out_dir, f"{bug_id}_extended_reasoning_query.txt"), "w", encoding="utf-8") as f:
-            f.write(extended_processed)
+            f.write(extended_query)
 
         await log_event("PROCESS", bug_id, "done")
-        await localization_queue.put((bug_id, baseline_processed, extended_processed))
+        await localization_queue.put((bug_id, baseline_query, extended_query))
         process_queue.task_done()
 
 async def localize_worker(search_base, top_n_documents, processed_documents):
