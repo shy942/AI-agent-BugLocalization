@@ -1,4 +1,9 @@
 #!/bin/bash
 export PYTHONPATH=src
-python src/main.py > log2.txt 2>&1
+mkdir -p logs/terminal_logs
+python src/KEYBERT.py > logs/terminal_logs/keybert_log.txt 2>&1 &   # Run in background
+python src/NLP.py > logs/terminal_logs/NLP_log.txt 2>&1 &  
+python src/reason.py > logs/terminal_logs/reason_log.txt 2>&1 &   # Also run in background
+
+wait  # Wait for both scripts to finish
 
