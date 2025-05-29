@@ -1,0 +1,40 @@
+Project 103:
+
+Total number of groundtruth files: 79
+Total number of bugs: 126
+Total amount of groundtruth files not found in source code: 63
+Total number of Bug reports where all groundtruth files do not exist: 52
+Bug reports where all groundtruth files do not exist: ['193', '110', '111', '91', '92', '94', '97', '13', '14', '18', '1', '2', '4', '125', '22', '27', '29', '131', '32', '34', '36', '38', '141', '148', '40', '42', '46', '49', '153', '156', '157', '158', '50', '54', '57', '160', '60', '63', '64', '66', '67', '176', '179', '70', '71', '72', '100', '103', '107', '81', '84', '87']
+Total number of bug reports where some groundtruth files were missing: 8
+Bug reports where some groundtruth files were missing: ['8', '31', '33', '39', '45', '203', '65', '211']
+Total number of considered bugs: 4
+
+QE Improved Count: 0
+QE Identical Count: 4
+QE Worse Count: 0
+
+Hit@K for baseline queries:
+Hit@1: 25.00%
+Hit@5: 75.00%
+Hit@10: 75.00%
+
+Hit@K for extended queries:
+Hit@1: 25.00%
+Hit@5: 75.00%
+Hit@10: 75.00%
+
+MRR baseline queries: 0.5
+MRR extended queries: 0.5
+
+MAP baseline queries: 31.803902116402117
+MAP extended queries: 34.15282392026578
+
+Individual Results:
+217, 'Baseline', [2]
+217, 'Extended', [2]
+226, 'Baseline', [2, 18, 48]
+226, 'Extended', [2, 20, 43]
+45, 'Baseline', None
+45, 'Extended', None
+198, 'Baseline', [1, 21]
+198, 'Extended', [1, 7]
