@@ -1,0 +1,56 @@
+[13:52:30] [READ] Bug 46 at stage: start
+[13:52:30] [READ] Bug 46 at stage: done
+[13:52:30] [READ] Bug 32 at stage: start
+[13:52:30] [READ] Bug 32 at stage: done
+[13:52:30] [READ] Bug 217 at stage: start
+[13:52:30] [READ] Bug 217 at stage: done
+[13:52:30] [READ] Bug 226 at stage: start
+[13:52:30] [READ] Bug 226 at stage: done
+[13:52:30] [READ] Bug 45 at stage: start
+[13:52:30] [READ] Bug 45 at stage: done
+[13:52:30] [READ] Bug 81 at stage: start
+[13:52:30] [READ] Bug 81 at stage: done
+[13:52:30] [READ] Bug 198 at stage: start
+[13:52:30] [READ] Bug 198 at stage: done
+[13:52:30] [PROCESS] Bug 46 at stage: start
+[13:52:30] [PROCESS] Bug 46 at stage: done
+[13:52:30] [PROCESS] Bug 32 at stage: start
+[13:52:30] [PROCESS] Bug 32 at stage: done
+[13:52:30] [PROCESS] Bug 217 at stage: start
+[13:52:30] [PROCESS] Bug 217 at stage: done
+[13:52:30] [PROCESS] Bug 226 at stage: start
+[13:52:30] [PROCESS] Bug 226 at stage: done
+[13:52:30] [PROCESS] Bug 45 at stage: start
+[13:52:30] [PROCESS] Bug 45 at stage: done
+[13:52:30] [PROCESS] Bug 81 at stage: start
+[13:52:30] [PROCESS] Bug 81 at stage: done
+[13:52:30] [PROCESS] Bug 198 at stage: start
+[13:52:30] [PROCESS] Bug 198 at stage: done
+[13:52:30] [LOCALIZE] Bug 46 at stage: baseline start
+[13:52:30] [LOCALIZE] Bug 32 at stage: baseline start
+[13:52:30] [LOCALIZE] Bug 217 at stage: baseline start
+[13:52:30] [LOCALIZE] Bug 226 at stage: baseline start
+[13:52:30] [LOCALIZE] Bug 226 at stage: baseline done
+[13:52:30] [LOCALIZE] Bug 226 at stage: extended start
+[13:52:30] [LOCALIZE] Bug 46 at stage: baseline done
+[13:52:30] [LOCALIZE] Bug 46 at stage: extended start
+[13:52:30] [LOCALIZE] Bug 217 at stage: baseline done
+[13:52:30] [LOCALIZE] Bug 217 at stage: extended start
+[13:52:30] [LOCALIZE] Bug 32 at stage: baseline done
+[13:52:30] [LOCALIZE] Bug 32 at stage: extended start
+[13:52:30] [LOCALIZE] Bug 226 at stage: extended done
+[13:52:30] [LOCALIZE] Bug 45 at stage: baseline start
+[13:52:30] [LOCALIZE] Bug 46 at stage: extended done
+[13:52:30] [LOCALIZE] Bug 81 at stage: baseline start
+[13:52:30] [LOCALIZE] Bug 32 at stage: extended done
+[13:52:30] [LOCALIZE] Bug 198 at stage: baseline start
+[13:52:30] [LOCALIZE] Bug 217 at stage: extended done
+[13:52:30] [LOCALIZE] Bug 45 at stage: baseline done
+[13:52:30] [LOCALIZE] Bug 45 at stage: extended start
+[13:52:30] [LOCALIZE] Bug 198 at stage: baseline done
+[13:52:30] [LOCALIZE] Bug 198 at stage: extended start
+[13:52:30] [LOCALIZE] Bug 81 at stage: baseline done
+[13:52:30] [LOCALIZE] Bug 81 at stage: extended start
+[13:52:30] [LOCALIZE] Bug 45 at stage: extended done
+[13:52:30] [LOCALIZE] Bug 198 at stage: extended done
+[13:52:30] [LOCALIZE] Bug 81 at stage: extended done
