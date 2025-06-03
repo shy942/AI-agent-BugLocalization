@@ -1,63 +1,63 @@
-[13:52:30] [READ] Bug 46 at stage: start
-[13:52:30] [READ] Bug 46 at stage: done
-[13:52:30] [READ] Bug 32 at stage: start
-[13:52:30] [READ] Bug 32 at stage: done
-[13:52:30] [READ] Bug 217 at stage: start
-[13:52:30] [READ] Bug 217 at stage: done
-[13:52:30] [READ] Bug 226 at stage: start
-[13:52:30] [READ] Bug 226 at stage: done
-[13:52:30] [READ] Bug 45 at stage: start
-[13:52:30] [READ] Bug 45 at stage: done
-[13:52:30] [READ] Bug 81 at stage: start
-[13:52:30] [READ] Bug 81 at stage: done
-[13:52:30] [READ] Bug 198 at stage: start
-[13:52:30] [READ] Bug 198 at stage: done
-[13:52:30] [REASON] Bug 46 at stage: start
-[13:52:32] [REASON] Bug 46 at stage: done
-[13:52:32] [REASON] Bug 32 at stage: start
-[13:52:32] [REASON] Bug 32 at stage: done
-[13:52:32] [REASON] Bug 217 at stage: start
-[13:52:32] [REASON] Bug 217 at stage: done
-[13:52:32] [REASON] Bug 226 at stage: start
-[13:52:32] [REASON] Bug 226 at stage: done
-[13:52:32] [REASON] Bug 45 at stage: start
-[13:52:32] [REASON] Bug 45 at stage: done
-[13:52:32] [REASON] Bug 81 at stage: start
-[13:52:32] [REASON] Bug 81 at stage: done
-[13:52:32] [REASON] Bug 198 at stage: start
-[13:52:32] [REASON] Bug 198 at stage: done
-[13:52:32] [PROCESS] Bug 46 at stage: start
-[13:52:32] [PROCESS] Bug 46 at stage: done
-[13:52:32] [PROCESS] Bug 32 at stage: start
-[13:52:32] [PROCESS] Bug 32 at stage: done
-[13:52:32] [PROCESS] Bug 217 at stage: start
-[13:52:32] [PROCESS] Bug 217 at stage: done
-[13:52:32] [PROCESS] Bug 226 at stage: start
-[13:52:32] [PROCESS] Bug 226 at stage: done
-[13:52:32] [PROCESS] Bug 45 at stage: start
-[13:52:32] [PROCESS] Bug 45 at stage: done
-[13:52:32] [PROCESS] Bug 81 at stage: start
-[13:52:32] [PROCESS] Bug 81 at stage: done
-[13:52:32] [PROCESS] Bug 198 at stage: start
-[13:52:32] [PROCESS] Bug 198 at stage: done
-[13:52:32] [LOCALIZE] Bug 46 at stage: baseline start
-[13:52:32] [LOCALIZE] Bug 32 at stage: baseline start
-[13:52:32] [LOCALIZE] Bug 217 at stage: baseline start
-[13:52:32] [LOCALIZE] Bug 226 at stage: baseline start
-[13:52:32] [LOCALIZE] Bug 226 at stage: extended start
-[13:52:32] [LOCALIZE] Bug 32 at stage: extended start
-[13:52:32] [LOCALIZE] Bug 46 at stage: extended start
-[13:52:32] [LOCALIZE] Bug 217 at stage: extended start
-[13:52:32] [LOCALIZE] Bug 226 at stage: done
-[13:52:32] [LOCALIZE] Bug 45 at stage: baseline start
-[13:52:32] [LOCALIZE] Bug 32 at stage: done
-[13:52:32] [LOCALIZE] Bug 81 at stage: baseline start
-[13:52:32] [LOCALIZE] Bug 46 at stage: done
-[13:52:32] [LOCALIZE] Bug 198 at stage: baseline start
-[13:52:32] [LOCALIZE] Bug 217 at stage: done
-[13:52:32] [LOCALIZE] Bug 45 at stage: extended start
-[13:52:32] [LOCALIZE] Bug 81 at stage: extended start
-[13:52:32] [LOCALIZE] Bug 198 at stage: extended start
-[13:52:32] [LOCALIZE] Bug 45 at stage: done
-[13:52:32] [LOCALIZE] Bug 81 at stage: done
-[13:52:33] [LOCALIZE] Bug 198 at stage: done
+[22:19:00] [READ] Bug 198 at stage: start
+[22:19:00] [READ] Bug 198 at stage: done
+[22:19:00] [READ] Bug 217 at stage: start
+[22:19:00] [READ] Bug 217 at stage: done
+[22:19:00] [READ] Bug 226 at stage: start
+[22:19:00] [READ] Bug 226 at stage: done
+[22:19:00] [READ] Bug 32 at stage: start
+[22:19:00] [READ] Bug 32 at stage: done
+[22:19:00] [READ] Bug 45 at stage: start
+[22:19:00] [READ] Bug 45 at stage: done
+[22:19:00] [READ] Bug 46 at stage: start
+[22:19:00] [READ] Bug 46 at stage: done
+[22:19:00] [READ] Bug 81 at stage: start
+[22:19:00] [READ] Bug 81 at stage: done
+[22:19:00] [REASON] Bug 198 at stage: start
+[22:19:06] [REASON] Bug 198 at stage: done
+[22:19:06] [REASON] Bug 217 at stage: start
+[22:19:13] [REASON] Bug 217 at stage: done
+[22:19:13] [REASON] Bug 226 at stage: start
+[22:19:16] [REASON] Bug 226 at stage: done
+[22:19:16] [REASON] Bug 32 at stage: start
+[22:19:21] [REASON] Bug 32 at stage: done
+[22:19:21] [REASON] Bug 45 at stage: start
+[22:19:25] [REASON] Bug 45 at stage: done
+[22:19:25] [REASON] Bug 46 at stage: start
+[22:19:31] [REASON] Bug 46 at stage: done
+[22:19:31] [REASON] Bug 81 at stage: start
+[22:19:42] [REASON] Bug 81 at stage: done
+[22:19:42] [PROCESS] Bug 198 at stage: start
+[22:19:42] [PROCESS] Bug 198 at stage: done
+[22:19:42] [PROCESS] Bug 217 at stage: start
+[22:19:42] [PROCESS] Bug 217 at stage: done
+[22:19:42] [PROCESS] Bug 226 at stage: start
+[22:19:42] [PROCESS] Bug 226 at stage: done
+[22:19:42] [PROCESS] Bug 32 at stage: start
+[22:19:42] [PROCESS] Bug 32 at stage: done
+[22:19:42] [PROCESS] Bug 45 at stage: start
+[22:19:42] [PROCESS] Bug 45 at stage: done
+[22:19:42] [PROCESS] Bug 46 at stage: start
+[22:19:42] [PROCESS] Bug 46 at stage: done
+[22:19:42] [PROCESS] Bug 81 at stage: start
+[22:19:42] [PROCESS] Bug 81 at stage: done
+[22:19:42] [LOCALIZE] Bug 198 at stage: baseline start
+[22:19:42] [LOCALIZE] Bug 217 at stage: baseline start
+[22:19:42] [LOCALIZE] Bug 226 at stage: baseline start
+[22:19:42] [LOCALIZE] Bug 32 at stage: baseline start
+[22:19:43] [LOCALIZE] Bug 217 at stage: extended start
+[22:19:43] [LOCALIZE] Bug 198 at stage: extended start
+[22:19:43] [LOCALIZE] Bug 226 at stage: extended start
+[22:19:43] [LOCALIZE] Bug 32 at stage: extended start
+[22:19:43] [LOCALIZE] Bug 226 at stage: done
+[22:19:43] [LOCALIZE] Bug 45 at stage: baseline start
+[22:19:43] [LOCALIZE] Bug 32 at stage: done
+[22:19:43] [LOCALIZE] Bug 46 at stage: baseline start
+[22:19:43] [LOCALIZE] Bug 217 at stage: done
+[22:19:43] [LOCALIZE] Bug 81 at stage: baseline start
+[22:19:43] [LOCALIZE] Bug 198 at stage: done
+[22:19:43] [LOCALIZE] Bug 45 at stage: extended start
+[22:19:43] [LOCALIZE] Bug 46 at stage: extended start
+[22:19:43] [LOCALIZE] Bug 81 at stage: extended start
+[22:19:43] [LOCALIZE] Bug 45 at stage: done
+[22:19:43] [LOCALIZE] Bug 46 at stage: done
+[22:19:43] [LOCALIZE] Bug 81 at stage: done

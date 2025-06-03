@@ -26,7 +26,7 @@ def readFile(folder_path: str) -> str:
     for name in ["title.txt", "description.txt"]:
         path = os.path.join(folder_path, name)
         if os.path.exists(path):
-            with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 contents.append(f.read().strip())
 
     return "\n".join(contents).strip()
@@ -196,7 +196,7 @@ def index_source_code(source_code_dir: str) -> str:
 
     # Save only the tokenized_corpus
     # Check if index already exists
-    index_path = "./bm25_index.pkl"
+    index_path = "./bm25_index_project3.pkl"
     if os.path.exists(index_path):
         print("Index exists. Loading from file...")
         with open(index_path, "rb") as f:
@@ -229,7 +229,7 @@ def index_source_code(source_code_dir: str) -> str:
     hf_embedder = HuggingFaceEmbeddings(model_name=model_name)
 
     # Define the FAISS index directory path
-    faiss_index_dir = "./faiss_index_dir"
+    faiss_index_dir = "./faiss_index_dir_project3"
 
     # Check if index already exists
     if os.path.exists(faiss_index_dir) and os.listdir(faiss_index_dir):
@@ -243,8 +243,10 @@ def index_source_code(source_code_dir: str) -> str:
 
     print("BM25 and FAISS indexes are loaded.")
     # Load the indexes
-    bm25_index = pickle.load(open("bm25_index.pkl", "rb"))
+    bm25_index = pickle.load(open("bm25_index_project3.pkl", "rb"))
     faiss_index = FAISS.load_local(faiss_index_dir, hf_embedder, allow_dangerous_deserialization=True)
+    #print("BM25 and FAISS indexes are loaded.")
+    #print("Processed documents: ", processed_documents)
     return bm25_index, faiss_index, processed_documents
 
 

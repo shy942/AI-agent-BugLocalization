@@ -1,140 +1,155 @@
-[11:12:22] [READ] Bug 198 at stage: start
-[11:12:22] [READ] Bug 198 at stage: done
-[11:12:22] [READ] Bug 217 at stage: start
-[11:12:22] [READ] Bug 217 at stage: done
-[11:12:22] [READ] Bug 226 at stage: start
-[11:12:22] [READ] Bug 226 at stage: done
-[11:12:22] [READ] Bug 32 at stage: start
-[11:12:22] [READ] Bug 32 at stage: done
-[11:12:22] [READ] Bug 45 at stage: start
-[11:12:22] [READ] Bug 45 at stage: done
-[11:12:22] [READ] Bug 46 at stage: start
-[11:12:22] [READ] Bug 46 at stage: done
-[11:12:22] [READ] Bug 81 at stage: start
-[11:12:22] [READ] Bug 81 at stage: done
-[11:12:22] [PROCESS] Bug 198 at stage: start
-[11:12:22] [PROCESS] Bug 198 at stage: done
-[11:12:22] [PROCESS] Bug 217 at stage: start
-[11:12:22] [PROCESS] Bug 217 at stage: done
-[11:12:22] [PROCESS] Bug 226 at stage: start
-[11:12:22] [PROCESS] Bug 226 at stage: done
-[11:12:22] [PROCESS] Bug 32 at stage: start
-[11:12:22] [PROCESS] Bug 32 at stage: done
-[11:12:22] [PROCESS] Bug 45 at stage: start
-[11:12:22] [PROCESS] Bug 45 at stage: done
-[11:12:22] [PROCESS] Bug 46 at stage: start
-[11:12:22] [PROCESS] Bug 46 at stage: done
-[11:12:22] [PROCESS] Bug 81 at stage: start
-[11:12:22] [PROCESS] Bug 81 at stage: done
-[11:12:22] [KEYBERT] Bug 198 at stage: start
-[11:12:22] [REASON] Bug 198 at stage: start
-[11:12:22] [LOCALIZE] Bug 198 at stage: baselinekeyBERT start
-[11:12:22] [LOCALIZE] Bug 217 at stage: baselinekeyBERT start
-[11:12:22] [LOCALIZE] Bug 226 at stage: baselinekeyBERT start
-[11:12:22] [LOCALIZE] Bug 32 at stage: baselinekeyBERT start
-[11:12:23] [LOCALIZE] Bug 32 at stage: baselinekeyBERT done
-[11:12:23] [LOCALIZE] Bug 32 at stage: extendedkeyBERT start
-[11:12:23] [LOCALIZE] Bug 198 at stage: baselinekeyBERT done
-[11:12:23] [LOCALIZE] Bug 198 at stage: extendedkeyBERT start
-[11:12:23] [LOCALIZE] Bug 226 at stage: baselinekeyBERT done
-[11:12:23] [LOCALIZE] Bug 226 at stage: extendedkeyBERT start
-[11:12:23] [LOCALIZE] Bug 217 at stage: baselinekeyBERT done
-[11:12:23] [LOCALIZE] Bug 217 at stage: extendedkeyBERT start
-[11:12:23] [LOCALIZE] Bug 32 at stage: extendedkeyBERT done
-[11:12:23] [LOCALIZE] Bug 45 at stage: baselinekeyBERT start
-[11:12:23] [LOCALIZE] Bug 198 at stage: extendedkeyBERT done
-[11:12:23] [LOCALIZE] Bug 46 at stage: baselinekeyBERT start
-[11:12:23] [LOCALIZE] Bug 226 at stage: extendedkeyBERT done
-[11:12:23] [LOCALIZE] Bug 81 at stage: baselinekeyBERT start
-[11:12:23] [LOCALIZE] Bug 217 at stage: extendedkeyBERT done
-[11:12:23] [LOCALIZE] Bug 46 at stage: baselinekeyBERT done
-[11:12:23] [LOCALIZE] Bug 46 at stage: extendedkeyBERT start
-[11:12:23] [LOCALIZE] Bug 45 at stage: baselinekeyBERT done
-[11:12:23] [LOCALIZE] Bug 45 at stage: extendedkeyBERT start
-[11:12:24] [LOCALIZE] Bug 81 at stage: baselinekeyBERT done
-[11:12:24] [LOCALIZE] Bug 81 at stage: extendedkeyBERT start
-[11:12:24] [LOCALIZE] Bug 46 at stage: extendedkeyBERT done
-[11:12:24] [LOCALIZE] Bug 45 at stage: extendedkeyBERT done
-[11:12:27] [LOCALIZE] Bug 81 at stage: extendedkeyBERT done
-[11:12:31] [REASON] Bug 198 at stage: done
-[11:12:31] [REASON] Bug 217 at stage: start
-[11:12:31] [LOCALIZE] Bug 198 at stage: baselinereasoning start
-[11:12:32] [KEYBERT] Bug 198 at stage: done
-[11:12:32] [KEYBERT] Bug 217 at stage: start
-[11:12:32] [LOCALIZE] Bug 198 at stage: baselinebasic start
-[11:12:32] [LOCALIZE] Bug 198 at stage: baselinereasoning done
-[11:12:32] [LOCALIZE] Bug 198 at stage: extendedreasoning start
-[11:12:33] [LOCALIZE] Bug 198 at stage: baselinebasic done
-[11:12:33] [LOCALIZE] Bug 198 at stage: extendedbasic start
-[11:12:34] [LOCALIZE] Bug 198 at stage: extendedreasoning done
-[11:12:34] [LOCALIZE] Bug 198 at stage: extendedbasic done
-[11:12:39] [REASON] Bug 217 at stage: done
-[11:12:39] [REASON] Bug 226 at stage: start
-[11:12:39] [LOCALIZE] Bug 217 at stage: baselinereasoning start
-[11:12:44] [REASON] Bug 226 at stage: done
-[11:12:44] [REASON] Bug 32 at stage: start
-[11:12:44] [LOCALIZE] Bug 226 at stage: baselinereasoning start
-[11:12:46] [LOCALIZE] Bug 217 at stage: baselinereasoning done
-[11:12:46] [LOCALIZE] Bug 217 at stage: extendedreasoning start
-[11:12:46] [LOCALIZE] Bug 226 at stage: baselinereasoning done
-[11:12:46] [LOCALIZE] Bug 226 at stage: extendedreasoning start
-[11:12:47] [LOCALIZE] Bug 217 at stage: extendedreasoning done
-[11:12:47] [LOCALIZE] Bug 226 at stage: extendedreasoning done
-[11:12:49] [REASON] Bug 32 at stage: done
-[11:12:49] [REASON] Bug 45 at stage: start
-[11:12:49] [LOCALIZE] Bug 32 at stage: baselinereasoning start
-[11:12:53] [REASON] Bug 45 at stage: done
-[11:12:53] [REASON] Bug 46 at stage: start
-[11:12:53] [LOCALIZE] Bug 45 at stage: baselinereasoning start
-[11:12:54] [KEYBERT] Bug 217 at stage: done
-[11:12:54] [KEYBERT] Bug 226 at stage: start
-[11:12:54] [LOCALIZE] Bug 217 at stage: baselinebasic start
-[11:12:54] [LOCALIZE] Bug 32 at stage: baselinereasoning done
-[11:12:54] [LOCALIZE] Bug 32 at stage: extendedreasoning start
-[11:12:54] [LOCALIZE] Bug 45 at stage: baselinereasoning done
-[11:12:54] [LOCALIZE] Bug 45 at stage: extendedreasoning start
-[11:12:55] [LOCALIZE] Bug 217 at stage: baselinebasic done
-[11:12:55] [LOCALIZE] Bug 217 at stage: extendedbasic start
-[11:12:55] [LOCALIZE] Bug 32 at stage: extendedreasoning done
-[11:12:55] [LOCALIZE] Bug 45 at stage: extendedreasoning done
-[11:12:55] [LOCALIZE] Bug 217 at stage: extendedbasic done
-[11:13:01] [REASON] Bug 46 at stage: done
-[11:13:01] [REASON] Bug 81 at stage: start
-[11:13:01] [LOCALIZE] Bug 46 at stage: baselinereasoning start
-[11:13:02] [LOCALIZE] Bug 46 at stage: baselinereasoning done
-[11:13:02] [LOCALIZE] Bug 46 at stage: extendedreasoning start
-[11:13:02] [LOCALIZE] Bug 46 at stage: extendedreasoning done
-[11:13:03] [KEYBERT] Bug 226 at stage: done
-[11:13:03] [KEYBERT] Bug 32 at stage: start
-[11:13:03] [LOCALIZE] Bug 226 at stage: baselinebasic start
-[11:13:03] [LOCALIZE] Bug 226 at stage: baselinebasic done
-[11:13:03] [LOCALIZE] Bug 226 at stage: extendedbasic start
-[11:13:04] [LOCALIZE] Bug 226 at stage: extendedbasic done
-[11:13:05] [KEYBERT] Bug 32 at stage: done
-[11:13:05] [KEYBERT] Bug 45 at stage: start
-[11:13:05] [LOCALIZE] Bug 32 at stage: baselinebasic start
-[11:13:05] [LOCALIZE] Bug 32 at stage: baselinebasic done
-[11:13:05] [LOCALIZE] Bug 32 at stage: extendedbasic start
-[11:13:05] [LOCALIZE] Bug 32 at stage: extendedbasic done
-[11:13:11] [REASON] Bug 81 at stage: done
-[11:13:11] [LOCALIZE] Bug 81 at stage: baselinereasoning start
-[11:13:12] [LOCALIZE] Bug 81 at stage: baselinereasoning done
-[11:13:12] [LOCALIZE] Bug 81 at stage: extendedreasoning start
-[11:13:12] [LOCALIZE] Bug 81 at stage: extendedreasoning done
-[11:13:20] [KEYBERT] Bug 45 at stage: done
-[11:13:20] [KEYBERT] Bug 46 at stage: start
-[11:13:20] [LOCALIZE] Bug 45 at stage: baselinebasic start
-[11:13:20] [LOCALIZE] Bug 45 at stage: baselinebasic done
-[11:13:20] [LOCALIZE] Bug 45 at stage: extendedbasic start
-[11:13:20] [LOCALIZE] Bug 45 at stage: extendedbasic done
-[11:13:33] [KEYBERT] Bug 46 at stage: done
-[11:13:33] [KEYBERT] Bug 81 at stage: start
-[11:13:33] [LOCALIZE] Bug 46 at stage: baselinebasic start
-[11:13:33] [LOCALIZE] Bug 46 at stage: baselinebasic done
-[11:13:33] [LOCALIZE] Bug 46 at stage: extendedbasic start
-[11:13:33] [LOCALIZE] Bug 46 at stage: extendedbasic done
-[11:13:46] [KEYBERT] Bug 81 at stage: done
-[11:13:46] [LOCALIZE] Bug 81 at stage: baselinebasic start
-[11:13:46] [LOCALIZE] Bug 81 at stage: baselinebasic done
-[11:13:46] [LOCALIZE] Bug 81 at stage: extendedbasic start
-[11:13:46] [LOCALIZE] Bug 81 at stage: extendedbasic done
+[10:41:37] [READ] Bug 2295 at stage: start
+[10:41:37] [READ] Bug 2295 at stage: done
+[10:41:37] [READ] Bug 3387 at stage: start
+[10:41:37] [READ] Bug 3387 at stage: done
+[10:41:37] [READ] Bug 3428 at stage: start
+[10:41:37] [READ] Bug 3428 at stage: done
+[10:41:37] [READ] Bug 3461 at stage: start
+[10:41:37] [READ] Bug 3461 at stage: done
+[10:41:37] [READ] Bug 3678 at stage: start
+[10:41:37] [READ] Bug 3678 at stage: done
+[10:41:37] [READ] Bug 3805 at stage: start
+[10:41:37] [READ] Bug 3805 at stage: done
+[10:41:37] [READ] Bug 3980 at stage: start
+[10:41:37] [READ] Bug 3980 at stage: done
+[10:41:37] [READ] Bug 4213 at stage: start
+[10:41:37] [READ] Bug 4213 at stage: done
+[10:41:37] [READ] Bug 4481 at stage: start
+[10:41:37] [READ] Bug 4481 at stage: done
+[10:41:37] [READ] Bug 5403 at stage: start
+[10:41:38] [READ] Bug 5403 at stage: done
+[10:41:38] [READ] Bug 6328 at stage: start
+[10:41:38] [READ] Bug 6328 at stage: done
+[10:41:38] [PROCESS] Bug 2295 at stage: start
+[10:41:38] [PROCESS] Bug 2295 at stage: done
+[10:41:38] [PROCESS] Bug 3387 at stage: start
+[10:41:38] [PROCESS] Bug 3387 at stage: done
+[10:41:38] [PROCESS] Bug 3428 at stage: start
+[10:41:38] [PROCESS] Bug 3428 at stage: done
+[10:41:38] [PROCESS] Bug 3461 at stage: start
+[10:41:38] [PROCESS] Bug 3461 at stage: done
+[10:41:38] [PROCESS] Bug 3678 at stage: start
+[10:41:38] [PROCESS] Bug 3678 at stage: done
+[10:41:38] [PROCESS] Bug 3805 at stage: start
+[10:41:38] [PROCESS] Bug 3805 at stage: done
+[10:41:38] [PROCESS] Bug 3980 at stage: start
+[10:41:38] [PROCESS] Bug 3980 at stage: done
+[10:41:38] [PROCESS] Bug 4213 at stage: start
+[10:41:38] [PROCESS] Bug 4213 at stage: done
+[10:41:38] [PROCESS] Bug 4481 at stage: start
+[10:41:38] [PROCESS] Bug 4481 at stage: done
+[10:41:38] [PROCESS] Bug 5403 at stage: start
+[10:41:38] [PROCESS] Bug 5403 at stage: done
+[10:41:38] [PROCESS] Bug 6328 at stage: start
+[10:41:38] [PROCESS] Bug 6328 at stage: done
+[10:41:38] [KEYBERT] Bug 2295 at stage: start
+[10:41:41] [REASON] Bug 2295 at stage: start
+[10:41:41] [LOCALIZE] Bug 2295 at stage: baseline keyBERT start
+[10:41:41] [LOCALIZE] Bug 3387 at stage: baseline keyBERT start
+[10:41:41] [LOCALIZE] Bug 3428 at stage: baseline keyBERT start
+[10:41:41] [LOCALIZE] Bug 3461 at stage: baseline keyBERT start
+[10:41:41] [LOCALIZE] Bug 2295 at stage: baselinekeyBERT done
+[10:41:41] [LOCALIZE] Bug 2295 at stage: extendedkeyBERT start
+[10:41:42] [LOCALIZE] Bug 3387 at stage: baselinekeyBERT done
+[10:41:42] [LOCALIZE] Bug 3387 at stage: extendedkeyBERT start
+[10:41:42] [LOCALIZE] Bug 3461 at stage: baselinekeyBERT done
+[10:41:42] [LOCALIZE] Bug 3461 at stage: extendedkeyBERT start
+[10:41:42] [LOCALIZE] Bug 3387 at stage: extended keyBERT done
+[10:41:42] [LOCALIZE] Bug 3678 at stage: baseline keyBERT start
+[10:41:43] [LOCALIZE] Bug 3428 at stage: baselinekeyBERT done
+[10:41:43] [LOCALIZE] Bug 3428 at stage: extendedkeyBERT start
+[10:41:43] [LOCALIZE] Bug 3678 at stage: baselinekeyBERT done
+[10:41:43] [LOCALIZE] Bug 3678 at stage: extendedkeyBERT start
+[10:41:43] [LOCALIZE] Bug 2295 at stage: extended keyBERT done
+[10:41:43] [LOCALIZE] Bug 3805 at stage: baseline keyBERT start
+[10:41:44] [LOCALIZE] Bug 3678 at stage: extended keyBERT done
+[10:41:44] [LOCALIZE] Bug 3980 at stage: baseline keyBERT start
+[10:41:44] [LOCALIZE] Bug 3805 at stage: baselinekeyBERT done
+[10:41:44] [LOCALIZE] Bug 3805 at stage: extendedkeyBERT start
+[10:41:45] [LOCALIZE] Bug 3428 at stage: extended keyBERT done
+[10:41:45] [LOCALIZE] Bug 4213 at stage: baseline keyBERT start
+[10:41:45] [LOCALIZE] Bug 3980 at stage: baselinekeyBERT done
+[10:41:45] [LOCALIZE] Bug 3980 at stage: extendedkeyBERT start
+[10:41:45] [LOCALIZE] Bug 3805 at stage: extended keyBERT done
+[10:41:45] [LOCALIZE] Bug 4481 at stage: baseline keyBERT start
+[10:41:46] [LOCALIZE] Bug 4213 at stage: baselinekeyBERT done
+[10:41:46] [LOCALIZE] Bug 4213 at stage: extendedkeyBERT start
+[10:41:46] [LOCALIZE] Bug 4481 at stage: baselinekeyBERT done
+[10:41:46] [LOCALIZE] Bug 4481 at stage: extendedkeyBERT start
+[10:41:48] [LOCALIZE] Bug 4481 at stage: extended keyBERT done
+[10:41:48] [LOCALIZE] Bug 5403 at stage: baseline keyBERT start
+[10:41:48] [LOCALIZE] Bug 5403 at stage: baselinekeyBERT done
+[10:41:48] [LOCALIZE] Bug 5403 at stage: extendedkeyBERT start
+[10:41:50] [LOCALIZE] Bug 3461 at stage: extended keyBERT done
+[10:41:50] [LOCALIZE] Bug 6328 at stage: baseline keyBERT start
+[10:41:50] [LOCALIZE] Bug 3980 at stage: extended keyBERT done
+[10:41:50] [LOCALIZE] Bug 4213 at stage: extended keyBERT done
+[10:41:50] [LOCALIZE] Bug 5403 at stage: extended keyBERT done
+[10:41:50] [LOCALIZE] Bug 6328 at stage: baselinekeyBERT done
+[10:41:50] [LOCALIZE] Bug 6328 at stage: extendedkeyBERT start
+[10:41:51] [LOCALIZE] Bug 6328 at stage: extended keyBERT done
+[10:42:54] [REASON] Bug 2295 at stage: done
+[10:42:54] [REASON] Bug 3387 at stage: start
+[10:42:54] [LOCALIZE] Bug 2295 at stage: baseline reasoning start
+[10:42:54] [LOCALIZE] Bug 2295 at stage: baselinereasoning done
+[10:42:54] [LOCALIZE] Bug 2295 at stage: extendedreasoning start
+[10:42:54] [LOCALIZE] Bug 2295 at stage: extended reasoning done
+[10:42:59] [REASON] Bug 3387 at stage: done
+[10:42:59] [REASON] Bug 3428 at stage: start
+[10:42:59] [LOCALIZE] Bug 3387 at stage: baseline reasoning start
+[10:43:00] [LOCALIZE] Bug 3387 at stage: baselinereasoning done
+[10:43:00] [LOCALIZE] Bug 3387 at stage: extendedreasoning start
+[10:43:00] [LOCALIZE] Bug 3387 at stage: extended reasoning done
+[10:43:48] [REASON] Bug 3428 at stage: done
+[10:43:48] [REASON] Bug 3461 at stage: start
+[10:43:48] [LOCALIZE] Bug 3428 at stage: baseline reasoning start
+[10:43:49] [LOCALIZE] Bug 3428 at stage: baselinereasoning done
+[10:43:49] [LOCALIZE] Bug 3428 at stage: extendedreasoning start
+[10:43:49] [LOCALIZE] Bug 3428 at stage: extended reasoning done
+[10:44:05] [REASON] Bug 3461 at stage: done
+[10:44:05] [REASON] Bug 3678 at stage: start
+[10:44:05] [LOCALIZE] Bug 3461 at stage: baseline reasoning start
+[10:44:06] [LOCALIZE] Bug 3461 at stage: baselinereasoning done
+[10:44:06] [LOCALIZE] Bug 3461 at stage: extendedreasoning start
+[10:44:06] [LOCALIZE] Bug 3461 at stage: extended reasoning done
+[10:44:16] [REASON] Bug 3678 at stage: done
+[10:44:16] [REASON] Bug 3805 at stage: start
+[10:44:16] [LOCALIZE] Bug 3678 at stage: baseline reasoning start
+[10:44:16] [LOCALIZE] Bug 3678 at stage: baselinereasoning done
+[10:44:16] [LOCALIZE] Bug 3678 at stage: extendedreasoning start
+[10:44:16] [LOCALIZE] Bug 3678 at stage: extended reasoning done
+[10:45:35] [REASON] Bug 3805 at stage: done
+[10:45:35] [REASON] Bug 3980 at stage: start
+[10:45:35] [LOCALIZE] Bug 3805 at stage: baseline reasoning start
+[10:45:36] [LOCALIZE] Bug 3805 at stage: baselinereasoning done
+[10:45:36] [LOCALIZE] Bug 3805 at stage: extendedreasoning start
+[10:45:36] [LOCALIZE] Bug 3805 at stage: extended reasoning done
+[10:47:02] [REASON] Bug 3980 at stage: done
+[10:47:02] [REASON] Bug 4213 at stage: start
+[10:47:02] [LOCALIZE] Bug 3980 at stage: baseline reasoning start
+[10:47:03] [LOCALIZE] Bug 3980 at stage: baselinereasoning done
+[10:47:03] [LOCALIZE] Bug 3980 at stage: extendedreasoning start
+[10:47:03] [LOCALIZE] Bug 3980 at stage: extended reasoning done
+[10:47:10] [REASON] Bug 4213 at stage: done
+[10:47:10] [REASON] Bug 4481 at stage: start
+[10:47:10] [LOCALIZE] Bug 4213 at stage: baseline reasoning start
+[10:47:11] [LOCALIZE] Bug 4213 at stage: baselinereasoning done
+[10:47:11] [LOCALIZE] Bug 4213 at stage: extendedreasoning start
+[10:47:11] [LOCALIZE] Bug 4213 at stage: extended reasoning done
+[10:48:46] [REASON] Bug 4481 at stage: done
+[10:48:46] [REASON] Bug 5403 at stage: start
+[10:48:46] [LOCALIZE] Bug 4481 at stage: baseline reasoning start
+[10:48:46] [LOCALIZE] Bug 4481 at stage: baselinereasoning done
+[10:48:46] [LOCALIZE] Bug 4481 at stage: extendedreasoning start
+[10:48:46] [LOCALIZE] Bug 4481 at stage: extended reasoning done
+[10:49:42] [REASON] Bug 5403 at stage: done
+[10:49:42] [REASON] Bug 6328 at stage: start
+[10:49:42] [LOCALIZE] Bug 5403 at stage: baseline reasoning start
+[10:49:42] [LOCALIZE] Bug 5403 at stage: baselinereasoning done
+[10:49:42] [LOCALIZE] Bug 5403 at stage: extendedreasoning start
+[10:49:42] [LOCALIZE] Bug 5403 at stage: extended reasoning done
+[10:49:53] [REASON] Bug 6328 at stage: done
+[10:49:53] [LOCALIZE] Bug 6328 at stage: baseline reasoning start
+[10:49:54] [LOCALIZE] Bug 6328 at stage: baselinereasoning done
+[10:49:54] [LOCALIZE] Bug 6328 at stage: extendedreasoning start
+[10:49:54] [LOCALIZE] Bug 6328 at stage: extended reasoning done

@@ -20,7 +20,7 @@ bm25_index = None
 faiss_index = None
 bm25_weight = 0.3
 faiss_weight = 0.7
-top_n = 10 # Number of top keywords to retrieve
+top_n = 15 # Number of top keywords to retrieve
 top_n_documents = 100 # Number of top documents to retrieve, but default is 100
 query_type = None
 
@@ -75,14 +75,18 @@ async def keybert_worker(output_base, top_n):
     while True:
         bug_dir, bug_id, baseline_processed, extended_processed= await keybert_queue.get()
         await log_event("KEYBERT", bug_id, "start")
-
+        
+        print("In keyBERT baseline_processed: "+baseline_processed)
+        print("In keyBERT extended_processed: "+extended_processed)
         # === Baseline ===
         keywords = await run_blocking(processBugReportQueryKeyBERT_agent.run, baseline_processed, top_n)
-        baseline_query = " ".join(keywords.get("file_content", [])) 
+        baseline_query = " ".join(keywords.get("file_content", "")) 
+        #baseline_query = processBugReportQueryKeyBERT_agent.run(baseline_processed, top_n).get("file_content", "")
 
         # === Extended ===
         extended_keywords = await run_blocking(processBugReportQueryKeyBERT_agent.run, extended_processed, top_n)
-        extended_query = " ".join(extended_keywords.get("file_content", [])) 
+        extended_query = " ".join(extended_keywords.get("file_content", "")) 
+        #extended_query = processBugReportQueryKeyBERT_agent.run(extended_processed, top_n).get("file_content", "")
 
         output_dir = os.path.join(output_base, bug_id)
         os.makedirs(output_dir, exist_ok=True)
@@ -99,36 +103,36 @@ async def reason_worker(output_base):
     while True:
         bug_dir, bug_id, raw, extended_raw = await reason_queue.get()
         await log_event("REASON", bug_id, "start")
-        # #=== Baseline ===
-        # reason_results = await run_blocking(processBugReportQueryReasoning_agent.run, raw)
-        # raw_results = reason_results.get("file_content")
-        # print("reason_raw_results: "+raw_results)
+        #=== Baseline ===
+        reason_results = await run_blocking(processBugReportQueryReasoning_agent.run, raw)
+        raw_results = reason_results.get("file_content")
+        print("reason_raw_results: "+raw_results)
 
-        # # === Extended ===
-        # reason_results = await run_blocking(processBugReportQueryReasoning_agent.run, extended_raw)
-        # extended_results = reason_results.get("file_content")
-        # print("reason_extended_results: "+extended_results)
+        # === Extended ===
+        reason_results = await run_blocking(processBugReportQueryReasoning_agent.run, extended_raw)
+        extended_results = reason_results.get("file_content")
+        print("reason_extended_results: "+extended_results)
      
-        # # === Baseline ===
-        # processed_results = await run_blocking(processBugReportContentPostReasoning_agent.run, raw_results)
-        # baseline_query = processed_results.get("file_content")
-        # print("reason_processed_raw_results: "+baseline_query)
+        # === Baseline ===
+        processed_results = await run_blocking(processBugReportContentPostReasoning_agent.run, raw_results)
+        baseline_query = processed_results.get("file_content")
+        print("reason_processed_raw_results: "+baseline_query)
 
-        # # # # === Extended ===
-        # processed_results = await run_blocking(processBugReportContentPostReasoning_agent.run, extended_results)
-        # extended_query = processed_results.get("file_content")
-        # print("reason_processed_extended_results: "+extended_query)
+        # # # === Extended ===
+        processed_results = await run_blocking(processBugReportContentPostReasoning_agent.run, extended_results)
+        extended_query = processed_results.get("file_content")
+        print("reason_processed_extended_results: "+extended_query)
 
-        # output_dir = os.path.join(output_base, bug_id)
+        output_dir = os.path.join(output_base, bug_id)
        
-        # with open(os.path.join(output_dir, f"{bug_id}_baseline_reasoning.txt"), "w", encoding="utf-8") as f:
-        #     f.write(raw_results)
-        # with open(os.path.join(output_dir, f"{bug_id}_extended_reasoning.txt"), "w", encoding="utf-8") as f:
-        #     f.write(extended_results)
-        # with open(os.path.join(output_dir, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
-        #     f.write(baseline_query)
-        # with open(os.path.join(output_dir, f"{bug_id}_extended_reasoning_query.txt"), "w", encoding="utf-8") as f:
-        #     f.write(extended_query)
+        with open(os.path.join(output_dir, f"{bug_id}_baseline_reasoning.txt"), "w", encoding="utf-8") as f:
+            f.write(raw_results)
+        with open(os.path.join(output_dir, f"{bug_id}_extended_reasoning.txt"), "w", encoding="utf-8") as f:
+            f.write(extended_results)
+        with open(os.path.join(output_dir, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
+            f.write(baseline_query)
+        with open(os.path.join(output_dir, f"{bug_id}_extended_reasoning_query.txt"), "w", encoding="utf-8") as f:
+            f.write(extended_query)
       
         
         await log_event("REASON", bug_id, "done")
@@ -169,7 +173,7 @@ async def localize_worker(search_base, top_n_documents, processed_documents, que
         await log_event("LOCALIZE", bug_id, "extended "+query_type+" done")
         localization_queue.task_done()
 
-async def main_async(project_id, bug_reports_root, queries_output_root, search_result_path):
+async def main_async(project_id, bug_reports_root, source_code_dir, queries_output_root, search_result_path):
     global read_queue, process_queue, keybert_queue, reason_queue, localization_queue
     global bm25_index, faiss_index, query_type
     read_queue         = asyncio.Queue()
@@ -178,7 +182,7 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
     reason_queue       = asyncio.Queue()
     localization_queue = asyncio.Queue()
     # index source code and load indexes (bm25_index, faiss_index) and processed documents
-    bm25_index, faiss_index, processed_documents = index_source_code_agent.run(SourceCodeDir).get("file_content", "")
+    bm25_index, faiss_index, processed_documents = index_source_code_agent.run(source_code_dir).get("file_content", "[]")
     top_n_documents = len(processed_documents) # Number of top documents to retrieve, but default is 100
 
     bug_path = os.path.join(bug_reports_root, project_id)
@@ -186,7 +190,7 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
     os.makedirs(output_base, exist_ok=True)
     search_results_base = os.path.join(search_result_path, project_id)
     os.makedirs(search_results_base, exist_ok=True)
-    open("pipeline_log.txt", "w").close()
+    open("pipeline_log.txt", "w", encoding="utf-8").close()
     
 
     # Fill read queue with bug IDs
@@ -216,10 +220,19 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
 
 
 if __name__ == "__main__":
-    project_id = "103"
-    BugReportPath = os.path.expanduser("./ExampleProjectData/ProjectBugReports/")
-    SearchQueryPath = os.path.expanduser("./ExampleProjectData/ConstructedQueries/")
-    SourceCodeDir = os.path.expanduser("./ExampleProjectData/SourceCodes/Project103/tables/src/")
-    SearchResultPath = os.path.expanduser("./ExampleProjectData/SearchResults/")
+    ## Example Project Data
+    # project_id = "3"
+    # BugReportPath = os.path.expanduser("./ExampleProjectData/ProjectBugReports/")
+    # SearchQueryPath = os.path.expanduser("./ExampleProjectData/ConstructedQueries/")
+    # SourceCodeDir = os.path.expanduser("./ExampleProjectData/SourceCodes/Project3/aspnetboilerplate/src/")
+    # SearchResultPath = os.path.expanduser("./ExampleProjectData/SearchResults/")
     
-    asyncio.run(main_async(project_id, BugReportPath, SearchQueryPath, SearchResultPath))
+    ## Local Project Data
+    project_id = "3"
+    base="C:/Users/mukta/OneDrive/Documents/PhD/VisualBugProject/AllInOne/";
+    BugReportPath = (base+"/ProjectBugReports/DataWithProcessedImages/")
+    SearchQueryPath = (base+"/ConstructedQueriesNew/AIagentResearch/")
+    SourceCodeDir = (base+"/SourceCodes/Project3/Project3/aspnetboilerplate/")
+    SearchResultPath = (base+"/SearchResultsAI/")
+    
+    asyncio.run(main_async(project_id, BugReportPath, SourceCodeDir, SearchQueryPath, SearchResultPath))

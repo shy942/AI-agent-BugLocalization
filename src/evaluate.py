@@ -1,13 +1,13 @@
 import os
 
 # folder where all projects source codes are contained
-source_codes_root = "./ExampleProjectData/SourceCodes"
+source_codes_root = "./ExampleProjectData/SourceCodes/"
 
 # folder where all projects constructed search results are stored
-search_results_root = "./ExampleProjectData/SearchResults"
+search_results_root = "./ExampleProjectData/SearchResults/"
 
 # folder to store each projects evalution of their respective search results
-evaluation_results_root = "./ExampleProjectData/EvaluationResults"
+evaluation_results_root = "./ExampleProjectData/EvaluationResults/"
 
 # compute all query evaluators
 def compute_evaluation(groundtruth_data, search_data):
@@ -203,7 +203,7 @@ def parse_groundtruth(groundtruth_file, source_code_root, search_data):
     return groundtruth_data, len(all_groundtruth), len(missing_groundtruth), len(all_bugs), bugs_all_missing, bugs_some_missing
 
 # read and format the stored query search results to a dictionary
-def parse_search_results(search_results_dir, query_type):
+def parse_search_results(search_results_dir, query_type, project_name):
     search_data = {}
     
     # iterate through each bug directory
@@ -224,7 +224,7 @@ def parse_search_results(search_results_dir, query_type):
                         if len(parts) >= 2:
                             filename = parts[1].strip()
                             # normalize filename: remove 'tables.' prefix and convert to path format
-                            if filename.startswith('tables.'):
+                            if filename.startswith(f'{project_name}.'):
                                 filename = filename[7:]
                             # convert remaining dots to path separators except for file extension
                             filename_parts = filename.split('.')
@@ -245,7 +245,7 @@ def parse_search_results(search_results_dir, query_type):
                         if len(parts) >= 2:
                             filename = parts[1].strip()
                             # normalize filename: remove 'tables.' prefix and convert to path format
-                            if filename.startswith('tables.'):
+                            if filename.startswith(f'{project_name}.'):
                                 filename = filename[7:]
                             # convert remaining dots to path separators except for file extension
                             filename_parts = filename.split('.')
@@ -260,8 +260,8 @@ def main():
     
     # query types to evaluate
     query_types = ["basic", "keyBERT", "reasoning"]
-    project = "103"
-    
+    project = "3"
+    project_name = "aspnetboilerplate"
     source_path = os.path.join(source_codes_root, f"Project{project}")
     search_results_dir = os.path.join(search_results_root, project)
     
@@ -271,7 +271,7 @@ def main():
     for file in os.listdir(source_path):
         if file.startswith("Corpus"):
             source_corpus = os.path.join(source_path, file)
-        elif file == "tables":
+        elif file == project_name:
             source_code_root = os.path.join(source_path, file)
     
     if not source_corpus or not source_code_root:
@@ -296,14 +296,14 @@ def main():
         print(f"starting project {project}_{query_type}")
         
         # gather the search results data
-        search_data = parse_search_results(search_results_dir, query_type)
-        
+        search_data = parse_search_results(search_results_dir, query_type,project_name)
+        print(len(search_data))
         # gather the groundtruth data
         groundtruth_data, total_groundtruth_count, missing_groundtruth_count, total_bugs, bugs_all_missing, bugs_some_missing = parse_groundtruth(groundtruth_path, source_code_root, search_data)
-        
+        print(len(groundtruth_data))
         # compute all query evaluators
         data = compute_evaluation(groundtruth_data, search_data)
-        
+        print(data)
         # save search results
         bug_reports_considered_count = len(data['bug_report_ranks'])
         
