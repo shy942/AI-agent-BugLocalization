@@ -159,7 +159,7 @@ def processBugReportQueryReasoning(bug_report_content: str) -> str:
     )
     return response["choices"][0]["message"]["content"].strip()
 
-def index_source_code(source_code_dir: str) -> str:
+def index_source_code(source_code_dir: str, project_name: str = None, bm25_faiss_dir: str = None) -> str:
     documents = []  # from DirectoryLoader, etc.
     # Load source code files (recursively from a folder)
     source_code_dir = source_code_dir  # Folder with 1000 source code files
@@ -196,7 +196,13 @@ def index_source_code(source_code_dir: str) -> str:
 
     # Save only the tokenized_corpus
     # Check if index already exists
-    index_path = "./bm25_index_project3.pkl"
+    if project_name and bm25_faiss_dir:
+        os.makedirs(bm25_faiss_dir, exist_ok=True)
+        index_path = os.path.join(bm25_faiss_dir, f"bm25_index_{project_name}.pkl")
+    else:
+        # Fallback to old naming for compatibility
+        index_path = "./bm25_index_project3.pkl"
+        
     if os.path.exists(index_path):
         print("Index exists. Loading from file...")
         with open(index_path, "rb") as f:
@@ -229,7 +235,11 @@ def index_source_code(source_code_dir: str) -> str:
     hf_embedder = HuggingFaceEmbeddings(model_name=model_name)
 
     # Define the FAISS index directory path
-    faiss_index_dir = "./faiss_index_dir_project3"
+    if project_name and bm25_faiss_dir:
+        faiss_index_dir = os.path.join(bm25_faiss_dir, f"faiss_index_dir_{project_name}")
+    else:
+        # Fallback to old naming for compatibility
+        faiss_index_dir = "./faiss_index_dir_project3"
 
     # Check if index already exists
     if os.path.exists(faiss_index_dir) and os.listdir(faiss_index_dir):
@@ -243,8 +253,12 @@ def index_source_code(source_code_dir: str) -> str:
 
     print("BM25 and FAISS indexes are loaded.")
     # Load the indexes
-    bm25_index = pickle.load(open("bm25_index_project3.pkl", "rb"))
-    faiss_index = FAISS.load_local(faiss_index_dir, hf_embedder, allow_dangerous_deserialization=True)
+    if project_name and bm25_faiss_dir:
+        bm25_index = pickle.load(open(os.path.join(bm25_faiss_dir, f"bm25_index_{project_name}.pkl"), "rb"))
+        faiss_index = FAISS.load_local(os.path.join(bm25_faiss_dir, f"faiss_index_dir_{project_name}"), hf_embedder, allow_dangerous_deserialization=True)
+    else:
+        bm25_index = pickle.load(open("bm25_index_project3.pkl", "rb"))
+        faiss_index = FAISS.load_local(faiss_index_dir, hf_embedder, allow_dangerous_deserialization=True)
     #print("BM25 and FAISS indexes are loaded.")
     #print("Processed documents: ", processed_documents)
     return bm25_index, faiss_index, processed_documents

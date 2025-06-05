@@ -3,3 +3,7 @@ venv/
 # Docker
 .docker/
 *.env
+logs/
+*.log
+*.txt
+AgentProjectData/

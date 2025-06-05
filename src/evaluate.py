@@ -1,13 +1,24 @@
 import os
+import itertools
+from collections import defaultdict
 
 # folder where all projects source codes are contained
-source_codes_root = "./ExampleProjectData/SourceCodes/"
+source_codes_root = "./AgentProjectData/SourceCodes/"
 
 # folder where all projects constructed search results are stored
-search_results_root = "./ExampleProjectData/SearchResults/"
+search_results_root = "./AgentProjectData/SearchResults/"
 
 # folder to store each projects evalution of their respective search results
-evaluation_results_root = "./ExampleProjectData/EvaluationResults/"
+evaluation_results_root = "./AgentProjectData/EvaluationResults/"
+
+# Project mapping
+project_mapping = {
+    "3": "aspnetboilerplate",
+    "13": "Atlas", 
+    "14": "ARKStatsExtractor",
+    "20": "CodenameOne",
+    "24": "mobile-wallet"
+}
 
 # compute all query evaluators
 def compute_evaluation(groundtruth_data, search_data):
@@ -144,17 +155,39 @@ def compute_evaluation(groundtruth_data, search_data):
         'map_extended': map_extended
     }
 
+def generate_possible_paths(dotted_path):
+    parts = dotted_path.split('.')
+    base_parts, extension = parts[:-1], parts[-1]
+    n = len(base_parts)
+
+    all_paths = []
+    for combo in itertools.product(['.', '/'], repeat=n-1):
+        path = base_parts[0]
+        for sep, part in zip(combo, base_parts[1:]):
+            path += sep + part
+        path += '.' + extension  # append extension
+        all_paths.append(path)
+    
+    return all_paths
+
 # read and format the groundtruth to a dictionary
-def parse_groundtruth(groundtruth_file, source_code_root, search_data):
+def parse_groundtruth(groundtruth_file, groundtruth_found_file, source_code_root, search_data):
 
     # these are the only bug reports to consider for evaluation
     bug_reports_with_queries = {key[0] for key in search_data.keys()}
+
+    # Read the groundtruthFound file to get valid bug IDs
+    valid_bug_ids = set()
+    with open(groundtruth_found_file, 'r') as file:
+        for line in file:
+            bug_id = line.strip()
+            if bug_id:
+                valid_bug_ids.add(bug_id)
 
     # datasets to keep track of necessary groundtruth data
     groundtruth_data = {}
     all_groundtruth = set()
     missing_groundtruth = set()
-    all_bugs = set()
     bugs_all_missing = []
     bugs_some_missing = []
     
@@ -169,28 +202,50 @@ def parse_groundtruth(groundtruth_file, source_code_root, search_data):
             # setup for data retrieval
             query_name, num_lines = query_line.split()
             num_lines = int(num_lines)
-            all_bugs.add(query_name)  # track all bugs from ground truth
+            
+            # Only process bugs that are in the groundtruthFound file
+            if query_name not in valid_bug_ids:
+                # Skip this bug and its lines
+                for _ in range(num_lines):
+                    file.readline()
+                continue
+                
             groundtruth_entries = set()
             non_existent_count = 0
             
             for _ in range(num_lines):
                 line = file.readline().strip()
                 
-                # format each path for comparison to search results
-                parts = line.split('.')
-                if len(parts) > 1:
-                    line = os.path.join(*parts[:-1]) + '.' + parts[-1]
-
-                # track whether the path actually exists
-                full_path = os.path.join(source_code_root, line)
-                all_groundtruth.add(full_path)
-                if os.path.exists(full_path):
-                    groundtruth_entries.add(line)
+                # Generate all possible paths from the dot notation
+                possible_paths = generate_possible_paths(line)
+                
+                # Check which path actually exists in the source code directory
+                found_path = None
+                for possible_path in possible_paths:
+                    full_path = os.path.join(source_code_root, possible_path)
+                    if os.path.exists(full_path):
+                        found_path = possible_path
+                        break
+                
+                if found_path:
+                    # File exists - normalize the path to match search results format
+                    # Convert dots to forward slashes in path components (except file extension)
+                    path_parts = found_path.split('.')
+                    if len(path_parts) > 1:
+                        # Keep the extension as is, convert dots to slashes in the rest
+                        normalized_path = '/'.join(path_parts[:-1]) + '.' + path_parts[-1]
+                    else:
+                        normalized_path = found_path
+                    
+                    groundtruth_entries.add(normalized_path)
+                    all_groundtruth.add(os.path.join(source_code_root, found_path))
                 else:
+                    # No valid path found - mark as missing
                     non_existent_count += 1
-                    missing_groundtruth.add(full_path)
+                    # Add the original dotted path to missing (for tracking)
+                    missing_groundtruth.add(os.path.join(source_code_root, line))
             
-            # categorize ALL bugs based on ground truth file existence
+            # categorize bugs based on ground truth file existence
             if len(groundtruth_entries) == 0 and num_lines > 0:
                 bugs_all_missing.append(query_name)
             elif non_existent_count > 0:
@@ -200,7 +255,13 @@ def parse_groundtruth(groundtruth_file, source_code_root, search_data):
             if query_name in bug_reports_with_queries:
                 groundtruth_data[query_name] = (groundtruth_entries, non_existent_count)
     
-    return groundtruth_data, len(all_groundtruth), len(missing_groundtruth), len(all_bugs), bugs_all_missing, bugs_some_missing
+    # Total bugs = number of bugs in groundtruthFound file
+    total_bugs = len(valid_bug_ids)
+    
+    # Total considered bugs = total bugs - bugs with all missing groundtruth files
+    total_considered_bugs = total_bugs - len(bugs_all_missing)
+    
+    return groundtruth_data, len(all_groundtruth), len(missing_groundtruth), total_bugs, bugs_all_missing, bugs_some_missing, total_considered_bugs
 
 # read and format the stored query search results to a dictionary
 def parse_search_results(search_results_dir, query_type, project_name):
@@ -223,9 +284,9 @@ def parse_search_results(search_results_dir, query_type, project_name):
                         parts = line.split(',')
                         if len(parts) >= 2:
                             filename = parts[1].strip()
-                            # normalize filename: remove 'tables.' prefix and convert to path format
+                            # normalize filename: remove project prefix and convert to path format
                             if filename.startswith(f'{project_name}.'):
-                                filename = filename[7:]
+                                filename = filename[len(project_name)+1:]
                             # convert remaining dots to path separators except for file extension
                             filename_parts = filename.split('.')
                             if len(filename_parts) > 1:
@@ -244,9 +305,9 @@ def parse_search_results(search_results_dir, query_type, project_name):
                         parts = line.split(',')
                         if len(parts) >= 2:
                             filename = parts[1].strip()
-                            # normalize filename: remove 'tables.' prefix and convert to path format
+                            # normalize filename: remove project prefix and convert to path format
                             if filename.startswith(f'{project_name}.'):
-                                filename = filename[7:]
+                                filename = filename[len(project_name)+1:]
                             # convert remaining dots to path separators except for file extension
                             filename_parts = filename.split('.')
                             if len(filename_parts) > 1:
@@ -256,16 +317,16 @@ def parse_search_results(search_results_dir, query_type, project_name):
             
     return search_data
 
-def main():
+def evaluate_project(project_id, project_name):
+    """Evaluate a single project and generate evaluation files"""
     
     # query types to evaluate
     query_types = ["basic", "keyBERT", "reasoning"]
-    project = "3"
-    project_name = "aspnetboilerplate"
-    source_path = os.path.join(source_codes_root, f"Project{project}")
-    search_results_dir = os.path.join(search_results_root, project)
     
-    # find the path to the source code
+    source_path = os.path.join(source_codes_root, f"Project{project_id}")
+    search_results_dir = os.path.join(search_results_root, project_id)
+    
+    # find the path to the source code and corpus
     source_corpus = None
     source_code_root = None
     for file in os.listdir(source_path):
@@ -280,38 +341,50 @@ def main():
     
     # find the path to the groundtruth file
     groundtruth_file = None
+    groundtruth_found_file = None
     for file in os.listdir(source_corpus):
         if file.startswith("groundtruth_"):
             groundtruth_file = file
-            break
+        elif file.startswith("groundtruthFound_"):
+            groundtruth_found_file = file
     
     if not groundtruth_file:
         print("Error: no ground truth file found")
         return
     
+    if not groundtruth_found_file:
+        print("Error: no groundtruthFound file found")
+        return
+    
     groundtruth_path = os.path.join(source_corpus, groundtruth_file)
+    groundtruth_found_path = os.path.join(source_corpus, groundtruth_found_file)
+    
+    # Create project-specific evaluation directory
+    project_evaluation_dir = os.path.join(evaluation_results_root, f"Project{project_id}")
+    os.makedirs(project_evaluation_dir, exist_ok=True)
     
     # evaluate each query type
     for query_type in query_types:
-        print(f"starting project {project}_{query_type}")
+        print(f"Starting evaluation for Project {project_id} - {query_type}")
         
         # gather the search results data
-        search_data = parse_search_results(search_results_dir, query_type,project_name)
-        print(len(search_data))
+        search_data = parse_search_results(search_results_dir, query_type, project_name)
+        print(f"Found {len(search_data)} search results")
+        
         # gather the groundtruth data
-        groundtruth_data, total_groundtruth_count, missing_groundtruth_count, total_bugs, bugs_all_missing, bugs_some_missing = parse_groundtruth(groundtruth_path, source_code_root, search_data)
-        print(len(groundtruth_data))
+        groundtruth_data, total_groundtruth_count, missing_groundtruth_count, total_bugs, bugs_all_missing, bugs_some_missing, total_considered_bugs = parse_groundtruth(groundtruth_path, groundtruth_found_path, source_code_root, search_data)
+        print(f"Found {len(groundtruth_data)} groundtruth entries")
+        
         # compute all query evaluators
         data = compute_evaluation(groundtruth_data, search_data)
-        print(data)
+        
         # save search results
         bug_reports_considered_count = len(data['bug_report_ranks'])
         
-        storage_path = os.path.join(evaluation_results_root, f"evaluation_{query_type.lower()}.txt")
-        os.makedirs(evaluation_results_root, exist_ok=True)
+        storage_path = os.path.join(project_evaluation_dir, f"evaluation_{query_type.lower()}.txt")
         
         with open(storage_path, 'w') as file:
-            file.write(f"Project {project}:\n\n")
+            file.write(f"Project {project_id} ({project_name}):\n\n")
             file.write(f"Total number of groundtruth files: {total_groundtruth_count}\n")
             file.write(f"Total number of bugs: {total_bugs}\n")
             file.write(f"Total amount of groundtruth files not found in source code: {missing_groundtruth_count}\n")
@@ -322,7 +395,7 @@ def main():
             file.write(f"Total number of bug reports where some groundtruth files were missing: {len(bugs_some_missing)}\n")
             file.write(f"Bug reports where some groundtruth files were missing: {bugs_some_missing}\n")
             
-            file.write(f"Total number of considered bugs: {bug_reports_considered_count}\n")
+            file.write(f"Total number of considered bugs: {total_considered_bugs}\n")
             
             file.write(f"\nQE Improved Count: {data['improvement_count']}\n")
             file.write(f"QE Identical Count: {data['same_count']}\n")
@@ -347,7 +420,20 @@ def main():
                 file.write(f"{rank_info['query_name']}, 'Baseline', {rank_info['baseline_rank']}\n")
                 file.write(f"{rank_info['query_name']}, 'Extended', {rank_info['extended_rank']}\n")
                 
-        print(f"stored evaluation for project {project}_{query_type} to {storage_path}")
+        print(f"Stored evaluation for Project {project_id} - {query_type} to {storage_path}")
+
+def main():
+    """Main function to evaluate all projects"""
+    
+    print("Starting evaluation for all projects in AgentProjectData...")
+    
+    # Process all projects
+    for project_id, project_name in project_mapping.items():
+        print(f"\n=== Evaluating Project {project_id} ({project_name}) ===")
+        evaluate_project(project_id, project_name)
+        print(f"=== Completed Project {project_id} ===")
+    
+    print(f"\nAll evaluations completed! Results stored in {evaluation_results_root}")
 
 if __name__ == "__main__":
     main() 
