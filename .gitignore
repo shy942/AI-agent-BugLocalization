@@ -4,4 +4,6 @@ venv/
 .docker/
 *.env
 logs/
+*.log
+*.txt
 AgentProjectData/
