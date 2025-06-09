@@ -1,1 +1,1 @@
-total wrong column crt false set crt false total incorrectly displayed wrong column dates amounts involved
+total row columns incorrect crt false set crt false total wrong column dates

@@ -1,1 +1,1 @@
-total row columns incorrect crt false set crt false calculate total wrong column
+total row columns incorrect crt false set crt false view total wrong column screenshot

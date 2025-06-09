@@ -116,6 +116,7 @@ try:
         name="index_source_code_agent",
         instruction="You are the IndexSourceCode Agent. "
                     "You will receive a folder path ('source_code_dir') which is the path to the source code. "
+                    "You will also receive a folder path ('source_code_index_path') which is the path to the source code index. "
                     "Your ONLY task is to index the source code using the 'index_source_code' tool. "
                     "Your output will be the a BM25 index ('bm25_index') and a FAISS index ('faiss_index') and the  processed documents ('processed_documents') from the 'index_source_code' tool.",
         tools=[index_source_code],

@@ -1,1 +1,1 @@
-total row misaligned changing column alignment open table add meta total align columns
+total row alignment incorrect change alignment add meta total align columns incorrect alignment total row column changing alignment adding meta total

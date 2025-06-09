@@ -152,7 +152,7 @@ def processBugReportQueryReasoning(bug_report_content: str) -> str:
 
     response = litellm.completion(
         model="huggingface/HuggingFaceH4/zephyr-7b-beta",
-        api_key="",
+        api_key="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",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
         max_tokens=512
@@ -163,7 +163,7 @@ def index_source_code(source_code_dir: str, project_name: str = None, bm25_faiss
     documents = []  # from DirectoryLoader, etc.
     # Load source code files (recursively from a folder)
     source_code_dir = source_code_dir  # Folder with 1000 source code files
-    #print("Indexing source code from: ", source_code_dir)
+    print("Indexing source code from: ", source_code_dir)
     # List of extensions you want to include
     source_extensions = ["*.py", "*.cpp", "*.c", "*.h", "*.hpp", "*.java", "*.js", "*.ts", "*.cs", "*.go", "*.php","*.vue"]
     # Create loaders for each extension
@@ -181,7 +181,7 @@ def index_source_code(source_code_dir: str, project_name: str = None, bm25_faiss
     documents = []
     for loader in loaders:
         documents.extend(loader.load())
-
+    print("Documents: ", documents)
     print(f"Loaded {len(documents)} source code files.")
 
     for doc in documents:
@@ -228,7 +228,7 @@ def index_source_code(source_code_dir: str, project_name: str = None, bm25_faiss
             metadata=doc.metadata
         )
         processed_documents.append(processed_doc)
-    
+    print("Processed documents: ", processed_documents)
     # Embed and build FAISS index
     model_name = "BAAI/bge-small-en-v1.5"
     #model_name = "microsoft/codebert-base"
