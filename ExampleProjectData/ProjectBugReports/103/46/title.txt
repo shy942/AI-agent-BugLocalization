@@ -1,1 +1,0 @@
-Money values not rendered correctly

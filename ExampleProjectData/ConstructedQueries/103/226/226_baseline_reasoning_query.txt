@@ -1,1 +1,0 @@
-incorrect entries count table footer soft deleted rows create table delete entry check footer row

@@ -1,1 +1,0 @@
-Error: operands could not be broadcast together with shapes (1892,) (102,) 

@@ -152,7 +152,7 @@ def processBugReportQueryReasoning(bug_report_content: str) -> str:
 
     response = litellm.completion(
         model="huggingface/HuggingFaceH4/zephyr-7b-beta",
-        api_key="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",
+        api_key="",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
         max_tokens=512

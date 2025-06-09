@@ -1,1 +1,0 @@
-set wrong false total screenshot bug row column columns crt

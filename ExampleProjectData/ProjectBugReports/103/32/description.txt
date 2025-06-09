@@ -1,4 +1,0 @@
-See screenshot:
-![screenshot 2018-03-10 11 38 42](https://user-images.githubusercontent.com/7204559/37241336-c51de98c-2457-11e8-9121-e15f6fa2b37c.png)
-
-If we set `"crtNo": false` the total value is in the wrong column

@@ -1,1 +1,0 @@
-Table pagination fails when multi-select filters are applied
