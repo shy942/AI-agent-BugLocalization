@@ -3,13 +3,13 @@ import itertools
 from collections import defaultdict
 
 # folder where all projects source codes are contained
-source_codes_root = "./AgentProjectData/SourceCodes/"
+source_codes_root = os.path.join(".", "AgentProjectData", "SourceCodes")
 
 # folder where all projects constructed search results are stored
-search_results_root = "./AgentProjectData/SearchResults/"
+search_results_root = os.path.join(".", "AgentProjectData", "SearchResults")
 
 # folder to store each projects evalution of their respective search results
-evaluation_results_root = "./AgentProjectData/EvaluationResults/"
+evaluation_results_root = os.path.join(".", "AgentProjectData", "EvaluationResults")
 
 # Project mapping
 project_mapping = {
@@ -161,7 +161,7 @@ def generate_possible_paths(dotted_path):
     n = len(base_parts)
 
     all_paths = []
-    for combo in itertools.product(['.', '/'], repeat=n-1):
+    for combo in itertools.product(['.', os.sep], repeat=n-1):
         path = base_parts[0]
         for sep, part in zip(combo, base_parts[1:]):
             path += sep + part
@@ -229,11 +229,11 @@ def parse_groundtruth(groundtruth_file, groundtruth_found_file, source_code_root
                 
                 if found_path:
                     # File exists - normalize the path to match search results format
-                    # Convert dots to forward slashes in path components (except file extension)
+                    # Convert dots to path separators in path components (except file extension)
                     path_parts = found_path.split('.')
                     if len(path_parts) > 1:
-                        # Keep the extension as is, convert dots to slashes in the rest
-                        normalized_path = '/'.join(path_parts[:-1]) + '.' + path_parts[-1]
+                        # Keep the extension as is, convert dots to path separators in the rest
+                        normalized_path = os.sep.join(path_parts[:-1]) + '.' + path_parts[-1]
                     else:
                         normalized_path = found_path
                     
