@@ -14,8 +14,8 @@ read_queue = process_queue = localization_queue = None
 # Shared index data
 bm25_index = None
 faiss_index = None
-bm25_weight = 0.3
-faiss_weight = 0.7
+bm25_weight = 0.5
+faiss_weight = 0.5
 top_n_documents = 100
 
 # Helper: run blocking code in thread
@@ -51,7 +51,7 @@ async def process_worker(output_base, project_id):
         baseline = processBugReportContent_agent.run(raw).get("file_content", "")
         extended = processBugReportContent_agent.run(extended_raw).get("file_content", "")
 
-        out_dir = os.path.join(output_base, bug_id)
+        out_dir = os.path.join(output_base, project_id)
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, f"{bug_id}_baseline_basic_query.txt"), "w", encoding="utf-8") as f:
             f.write(baseline)
@@ -132,14 +132,16 @@ if __name__ == "__main__":
     # Define base paths for AgentProjectData
     base_path = "./AgentProjectData"
     bug_reports_root = os.path.join(base_path, "ProjectBugReports")
-    constructed_query_root = os.path.join(base_path, "ConstructedQueries")
+    constructed_query_root = os.path.join(base_path, "ConstructedQueries/BaselineVsExtended/")
     search_result_path = os.path.join(base_path, "SearchResults")
     source_codes_root = os.path.join(base_path, "SourceCodes")
     bm25_faiss_dir = os.path.join(base_path, "BM25andFAISS")
     
     # Process all 5 projects
     projects = ["3", "13", "14", "20", "24"]
+    #projects = ["14", "20", "24"]
     
+
     # Clear the log file at the start
     os.makedirs("./logs/parallel_logs", exist_ok=True)
     open("./logs/parallel_logs/NLP_log.txt", "w").close()

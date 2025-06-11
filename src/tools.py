@@ -143,16 +143,16 @@ def processBugReportQueryReasoning(bug_report_content: str) -> str:
 
     \"\"\"{bug_report_content}\"\"\"
 
-    1. Summarize the main issue described.
-    2. Explain the functionality the user executed before encountering the issue.
-    Only provide the keywords for both summary and functionality in one line. 
+    1. Summarize the main issue described in the first line.
+    2. Include the {bug_report_content} in the second line.
+    Only provide the keywords for summary in one line. 
     Do not include any other text, or numbers (such as 1, 2, 3, etc.).
     Duplicate keywords are allowed.
     """
 
     response = litellm.completion(
         model="huggingface/HuggingFaceH4/zephyr-7b-beta",
-        api_key="",
+        api_key="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",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
         max_tokens=512
@@ -165,7 +165,7 @@ def index_source_code(source_code_dir: str, project_name: str = None, bm25_faiss
     source_code_dir = source_code_dir  # Folder with 1000 source code files
     print("Indexing source code from: ", source_code_dir)
     # List of extensions you want to include
-    source_extensions = ["*.py", "*.cpp", "*.c", "*.h", "*.hpp", "*.java", "*.js", "*.ts", "*.cs", "*.go", "*.php","*.vue"]
+    source_extensions = ["*.kt","*.csproj","*.py", "*.cpp", "*.c", "*.h", "*.hpp", "*.java", "*.js", "*.ts", "*.cs", "*.go", "*.php","*.vue"]
     # Create loaders for each extension
     loaders = [
         DirectoryLoader(

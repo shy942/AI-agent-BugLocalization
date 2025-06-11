@@ -11,8 +11,8 @@ from agents import (
 
 read_queue = reason_queue = process_queue = localization_queue = None
 bm25_index = faiss_index = None
-bm25_weight = 0.3
-faiss_weight = 0.7
+bm25_weight = 0.5
+faiss_weight = 0.5
 top_n_documents = 100
 
 async def run_blocking(fn, *args, **kw):
@@ -55,8 +55,13 @@ async def process_worker(output_base, project_id):
         baseline_query = processBugReportContentPostReasoning_agent.run(raw_reasoned).get("file_content", "")
         extended_query = processBugReportContentPostReasoning_agent.run(ext_reasoned).get("file_content", "")
 
-        out_dir = os.path.join(output_base, bug_id)
+        out_dir = os.path.join(output_base, project_id)
         os.makedirs(out_dir, exist_ok=True)
+        # with open(os.path.join(out_dir, f"{bug_id}_baseline_reasoning_query_raw.txt"), "w", encoding="utf-8") as f:
+        #     f.write(raw_reasoned)
+        # with open(os.path.join(out_dir, f"{bug_id}_extended_reasoning_query_raw.txt"), "w", encoding="utf-8") as f:
+        #     f.write(ext_reasoned)
+
         with open(os.path.join(out_dir, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
             f.write(baseline_query)
         with open(os.path.join(out_dir, f"{bug_id}_extended_reasoning_query.txt"), "w", encoding="utf-8") as f:
@@ -138,14 +143,16 @@ if __name__ == "__main__":
     # Define base paths for AgentProjectData
     base_path = "./AgentProjectData"
     bug_reports_root = os.path.join(base_path, "ProjectBugReports")
-    queries_output_root = os.path.join(base_path, "ConstructedQueries")
+    queries_output_root = os.path.join(base_path, "ConstructedQueries/BaselineVsReason/")
     search_result_path = os.path.join(base_path, "SearchResults")
     source_codes_root = os.path.join(base_path, "SourceCodes")
     bm25_faiss_dir = os.path.join(base_path, "BM25andFAISS")
     
     # Process all 5 projects
     projects = ["3", "13", "14", "20", "24"]
+    # projects = ["14", "20", "24"]
     
+
     # Clear the log file at the start
     os.makedirs("./logs/parallel_logs", exist_ok=True)
     open("./logs/parallel_logs/reason_log.txt", "w").close()
