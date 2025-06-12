@@ -1,7 +1,8 @@
 # Agent class for simplicity
 from tools import (
     readFile, processBugReportContent, preprocess_text, load_stopwords, processBugReportQueryKeyBERT, processBugReportQueryReasoning,
-    processBugReportContentPostReasoning, index_source_code, bug_localization_BM25_and_FAISS, get_short_filename
+    processBugReportContentPostReasoning, processBugReportQueryReasoningReflectOnResults,
+    index_source_code, bug_localization_BM25_and_FAISS, get_short_filename
 )
 from litellm import completion
 from typing import Callable
@@ -37,6 +38,8 @@ Now decide which tool to use.
                 tool_output = self.tools["processBugReportQueryReasoning"](*args)
             elif self.name == "process_bug_report_content_agent_post_reasoning":
                 tool_output = self.tools["processBugReportContentPostReasoning"](*args)
+            elif self.name == "process_bug_report_query_reasoning_reflects_on_results_agent":
+                tool_output = self.tools["processBugReportQueryReasoningReflectOnResults"] (*args)
             elif self.name == "index_source_code_agent":
                 tool_output = self.tools["index_source_code"](*args)
             elif self.name == "bug_localization_BM25_and_FAISS_agent":
@@ -109,6 +112,18 @@ try:
                     "Use the 'processBugReportQueryReasoning' tool to perform this action. ",
         tools=[processBugReportQueryReasoning], # List of tools the agent can use     
         output_key="file_content" # Specify the output key for the tool's result
+        )
+
+    processBugReportQueryReasoningReflectOnResults_agent = Agent(
+        model=MY_MODEL,     
+        name="process_bug_report_query_reasoning_reflects_on_results_agent",
+        instruction="You are the processBugReportQueryReasoningReflectOnResults Agent."
+                    "You will receive the output ('bug_report_content') of the 'readBugReportContent_agent'."
+                    "You will recive the output ('search_query') of the processBugReportQueryReasoning_agent"
+                    "Your ONLY task is to process that content using LLM and return (yes or no) as a string."
+                    "Use the 'processBugReportQueryReasoningReflectOnResults' tool to perform this action. ",
+        tools=[processBugReportQueryReasoningReflectOnResults], # List of tools the agent can use     
+        output_key="file_content"
         )
 
     index_source_code_agent = Agent(

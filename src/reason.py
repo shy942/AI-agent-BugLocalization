@@ -5,11 +5,13 @@ from agents import (
     readBugReportContent_agent,
     processBugReportQueryReasoning_agent,
     processBugReportContentPostReasoning_agent,
+    processBugReportQueryReasoningReflectOnResults_agent,
     index_source_code_agent,
     bug_localization_BM25_and_FAISS_agent
 )
+import sys
 
-read_queue = reason_queue = process_queue = localization_queue = None
+read_queue = reason_queue = process_queue = reflect_queue = localization_queue = None
 bm25_index = faiss_index = None
 bm25_weight = 0.5
 faiss_weight = 0.5
@@ -68,8 +70,37 @@ async def process_worker(output_base, project_id):
             f.write(extended_query)
 
         await log_event("PROCESS", bug_id, "done", project_id)
-        await localization_queue.put((bug_id, baseline_query, extended_query))
+        await reflect_queue.put((bug_dir, bug_id, raw_reasoned, ext_reasoned, baseline_query, extended_query))
+        #await localization_queue.put((bug_id, baseline_query, extended_query))
         process_queue.task_done()
+
+async def reflect_worker(output_base, project_id):
+    while True:
+        bug_dir, bug_id, raw_reasoned, ext_reasoned, baseline_query, extended_query = await reflect_queue.get()
+        await log_event("REFLECT", bug_id, "start", project_id)
+        baseline_Result = processBugReportQueryReasoningReflectOnResults_agent.run(raw_reasoned, baseline_query).get("file_content", "")
+        extended_Result = processBugReportQueryReasoningReflectOnResults_agent.run(ext_reasoned, extended_query).get("file_content", "")
+
+        out_dir = os.path.join(output_base, project_id)
+        os.makedirs(out_dir, exist_ok=True)
+        with open(os.path.join(out_dir, f"{bug_id}_baseline_reasoning_reflect_query.txt"), "w", encoding="utf-8") as f:
+            f.write(baseline_Result)
+        with open(os.path.join(out_dir, f"{bug_id}_extended_reasoning_reflect_query.txt"), "w", encoding="utf-8") as f:
+            f.write(extended_Result)
+        sys.stdout.flush()
+        print(f"DEBUG: baseline_Result repr: {repr(baseline_Result)}")
+        print(f"DEBUG: baseline_Result after strip/lower: {baseline_Result.strip().lower()}")
+        if baseline_Result.strip().lower() == 'appropriate':
+            print("appropriate")
+            sys.stdout.flush()
+            await localization_queue.put((bug_id, baseline_query, extended_query))
+        else: 
+            print("not appropriate")
+            sys.stdout.flush()
+            #await reason_queue.put(bug_dir, bug_id, raw_reasoned, ext_reasoned)
+        await log_event("REFLECT", bug_id, "done", project_id)
+        #await localization_queue.put((bug_id, baseline_query, extended_query))
+        reflect_queue.task_done()
 
 async def localize_worker(search_base, top_n_documents, processed_documents, project_id):
     while True:
@@ -101,12 +132,13 @@ async def localize_worker(search_base, top_n_documents, processed_documents, pro
         localization_queue.task_done()
 
 async def main_async(project_id, bug_reports_root, queries_output_root, search_result_path, source_code_dir, bm25_faiss_dir):
-    global read_queue, reason_queue, process_queue, localization_queue
+    global read_queue, reason_queue, process_queue, reflect_queue, localization_queue
     global bm25_index, faiss_index
 
     read_queue         = asyncio.Queue()
     reason_queue       = asyncio.Queue()
     process_queue      = asyncio.Queue()
+    reflect_queue      = asyncio.Queue()
     localization_queue = asyncio.Queue()
 
     bm25_index, faiss_index, processed_documents = index_source_code_agent.run(source_code_dir, f"project{project_id}", bm25_faiss_dir).get("file_content", "")
@@ -128,12 +160,14 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
         asyncio.create_task(read_worker(project_id)),
         asyncio.create_task(reason_worker(project_id)),
         asyncio.create_task(process_worker(output_base, project_id)),
+        asyncio.create_task(reflect_worker(output_base, project_id)),
         *[asyncio.create_task(localize_worker(search_base, top_n_documents, processed_documents, project_id)) for _ in range(4)],
     ]
 
     await read_queue.join()
     await reason_queue.join()
     await process_queue.join()
+    await reflect_queue.join()
     await localization_queue.join()
 
     for w in workers:
@@ -149,7 +183,8 @@ if __name__ == "__main__":
     bm25_faiss_dir = os.path.join(base_path, "BM25andFAISS")
     
     # Process all 5 projects
-    projects = ["3", "13", "14", "20", "24"]
+    projects = ["3"]
+    #, "13", "14", "20", "24"]
     # projects = ["14", "20", "24"]
     
 
