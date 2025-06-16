@@ -17,7 +17,7 @@ from langchain_community.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 import sys
 import io
-
+import ollama
 
 def readFile(folder_path: str) -> str:
     """Reads title.txt + description.txt """
@@ -160,82 +160,71 @@ def processBugReportQueryReasoning(bug_report_content: str) -> str:
     return response["choices"][0]["message"]["content"].strip()
 
 
-def processBugReportQueryReasoningReflectOnResults(bug_report_content: str, search_query:str) -> str:
+
+def processBugReportQueryReasoningReflectOnResults(bug_report_content: str, search_query: str) -> str:
     sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='utf-8')
 
     """
+    Analyze a bug report and a corresponding search query.
+    If the query is appropriate for localizing the bug, return "appropriate".
+    Otherwise, return an improved search query.
     
     Args:
-        bug_report_content (str): The content of bug report
-        reason_query (str): The search query created for bug_report_content
+        bug_report_content (str): The content of the bug report.
+        search_query (str): The search query created for the bug report.
 
     Returns:
-        str: appropriate or not appropriate
+        str: 'appropriate' or a modified/improved search query.
     """
 
     if not bug_report_content or not isinstance(bug_report_content, str):
         return "Invalid bug report content."
 
     prompt = f"""
-    You are an expert software engineer helping to locate buggy source code.  
-    You are given the following:
+    You are an expert software reasoning agent. You will be given a bug report and a corresponding search query.
 
-    \"\"\"{bug_report_content}\"\"\"
+    Your task is to:
+    1. Analyze whether the search query is sufficient to localize the bug described in the report.
+    2. If the search query captures the essential aspects of the bug report (functionality, symptoms, component), return only the string:
+   appropriate, do not include any other string
+    3. Otherwise, revise the bug report into a focused and helpful new search query. Return only the improved search query text.
+    Do not inlcude any other text. Just resturn the improved search query.
 
-    and search query 
+    ### Bug Report:
+    {bug_report_content}
 
-    \"\"\"{search_query}\"\"\"
+    ### Search Query:
+    {search_query}
 
-    Analyze the bug report {bug_report_content} and the search query {search_query}. Determine whether the search query is sufficiently relevant and 
-    descriptive to help retrieve source code that may contain the bug described in the report.
-
-    Use the following criteria:
-
-    1. Does the query include key terms or phrases that accurately reflect the core problem described in the bug report?
-    2. Does the query capture specific functionality, components, or modules implicated in the bug?
-    3. Is the query focused enough to avoid returning irrelevant results?
-
-    Reply with 'appropriate' or 'not appropriate' only.
-    appropriate — if the query is appropriate and likely to retrieve buggy code.
-    not appropriate — if the query is vague, incomplete, or irrelevant.
+    ### Your Response:
     """
 
-    response = litellm.completion(
-    model="openrouter/qwen/qwen3-8b",
-    api_key="",
-    api_base="https://openrouter.ai/api/v1",
-    messages=[{"role": "user", "content": prompt}],
-    temperature=0.3,
-    max_tokens=512,
-    return_dict=True
-    )
-
-    print("Prompt being sent:\n", prompt)
-    print("Response:\n", response)
     try:
-        content = response["choices"][0]["message"]["content"].strip()
-        if not content:
-            content = response["choices"][0]["provider_specific_fields"].get("reasoning_content", "").strip()
-            if content:
-                print("Fallback to reasoning_content:", content)
-            else:
-                content = "no response"
+        response = litellm.completion(
+            model="huggingface/meta-llama/Llama-3.3-70B-Instruct",
+            provider="huggingface",
+            api_key="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",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=1024,
+            return_dict=False
+        )
+        response_dict = response.model_dump()
+        print("🟩 Full response dict:\n", response_dict)
+
+        # Try different access strategies
+        choices = response_dict.get("choices", [])
+        if choices and isinstance(choices[0], dict):
+            #content = choices[0].get("content", "").strip()
+            content = choices[0]["message"]["content"].strip()
+        else:
+            content = "no content found"
     except Exception as e:
+        print(f"Exception during LLM call: {e}")
         content = "not appropriate"
 
-    # Use dot access instead of dict-style
-    # choice = response.choices[0]
-
-    # Try to get the normal message content
-    # content = choice.message.content.strip() if choice.message and choice.message.content else ""
-
-    # Fallback to reasoning_content if available
-    # if not content:
-    #     content = getattr(choice.provider_specific_fields, "reasoning_content", "").strip()
-
-    # if not content:
-    #     content = "no response"
     return content
+
 
 
 def index_source_code(source_code_dir: str, project_name: str = None, bm25_faiss_dir: str = None) -> str:

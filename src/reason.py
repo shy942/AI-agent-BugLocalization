@@ -46,59 +46,77 @@ async def reason_worker(project_id):
         await log_event("REASON", bug_id, "start", project_id)
         reasoned_raw = processBugReportQueryReasoning_agent.run(raw).get("file_content", "")
         reasoned_extended = processBugReportQueryReasoning_agent.run(extended_raw).get("file_content", "")
-        await process_queue.put((bug_dir, bug_id, reasoned_raw, reasoned_extended))
+        await process_queue.put((bug_dir, bug_id, raw, extended_raw, reasoned_raw, reasoned_extended))
         await log_event("REASON", bug_id, "done", project_id)
         reason_queue.task_done()
 
 async def process_worker(output_base, project_id):
     while True:
-        bug_dir, bug_id, raw_reasoned, ext_reasoned = await process_queue.get()
+        bug_dir, bug_id, raw, extended_raw, raw_reasoned, ext_reasoned = await process_queue.get()
         await log_event("PROCESS", bug_id, "start", project_id)
         baseline_query = processBugReportContentPostReasoning_agent.run(raw_reasoned).get("file_content", "")
         extended_query = processBugReportContentPostReasoning_agent.run(ext_reasoned).get("file_content", "")
-
-        out_dir = os.path.join(output_base, project_id)
-        os.makedirs(out_dir, exist_ok=True)
+        
+        # Do not delete the following lines
         # with open(os.path.join(out_dir, f"{bug_id}_baseline_reasoning_query_raw.txt"), "w", encoding="utf-8") as f:
         #     f.write(raw_reasoned)
         # with open(os.path.join(out_dir, f"{bug_id}_extended_reasoning_query_raw.txt"), "w", encoding="utf-8") as f:
         #     f.write(ext_reasoned)
 
-        with open(os.path.join(out_dir, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
+        with open(os.path.join(output_base, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
             f.write(baseline_query)
-        with open(os.path.join(out_dir, f"{bug_id}_extended_reasoning_query.txt"), "w", encoding="utf-8") as f:
+        with open(os.path.join(output_base, f"{bug_id}_extended_reasoning_query.txt"), "w", encoding="utf-8") as f:
             f.write(extended_query)
 
         await log_event("PROCESS", bug_id, "done", project_id)
-        await reflect_queue.put((bug_dir, bug_id, raw_reasoned, ext_reasoned, baseline_query, extended_query))
+        await reflect_queue.put((bug_dir, bug_id, raw, extended_raw, raw_reasoned, ext_reasoned))
         #await localization_queue.put((bug_id, baseline_query, extended_query))
         process_queue.task_done()
 
 async def reflect_worker(output_base, project_id):
     while True:
-        bug_dir, bug_id, raw_reasoned, ext_reasoned, baseline_query, extended_query = await reflect_queue.get()
+        bug_dir, bug_id, raw, extended_raw, raw_reasoned, ext_reasoned = await reflect_queue.get()
         await log_event("REFLECT", bug_id, "start", project_id)
-        baseline_Result = processBugReportQueryReasoningReflectOnResults_agent.run(raw_reasoned, baseline_query).get("file_content", "")
-        extended_Result = processBugReportQueryReasoningReflectOnResults_agent.run(ext_reasoned, extended_query).get("file_content", "")
+        baseline_reflect_result = processBugReportQueryReasoningReflectOnResults_agent.run(raw, raw_reasoned).get("file_content", "")
+        extended_reflect_result = processBugReportQueryReasoningReflectOnResults_agent.run(extended_raw, ext_reasoned).get("file_content", "")
 
-        out_dir = os.path.join(output_base, project_id)
-        os.makedirs(out_dir, exist_ok=True)
-        with open(os.path.join(out_dir, f"{bug_id}_baseline_reasoning_reflect_query.txt"), "w", encoding="utf-8") as f:
-            f.write(baseline_Result)
-        with open(os.path.join(out_dir, f"{bug_id}_extended_reasoning_reflect_query.txt"), "w", encoding="utf-8") as f:
-            f.write(extended_Result)
-        sys.stdout.flush()
-        print(f"DEBUG: baseline_Result repr: {repr(baseline_Result)}")
-        print(f"DEBUG: baseline_Result after strip/lower: {baseline_Result.strip().lower()}")
-        if baseline_Result.strip().lower() == 'appropriate':
+        # Do not delete the following 4 lines. They are for testing whether reflect function is working or not.
+        # with open(os.path.join(out_dir, f"{bug_id}_baseline_reasoning_reflect_query.txt"), "w", encoding="utf-8") as f:
+        #      f.write(baseline_reflect_result)
+        # with open(os.path.join(out_dir, f"{bug_id}_extended_reasoning_reflect_query.txt"), "w", encoding="utf-8") as f:
+        #      f.write(extended_reflect_result)
+        
+        #baseline query
+        if baseline_reflect_result.strip().lower() == 'appropriate':
+            # The search query is good enough and accpted and can be used by BL tool
             print("appropriate")
-            sys.stdout.flush()
-            await localization_queue.put((bug_id, baseline_query, extended_query))
+            #await localization_queue.put((bug_id, baseline_query, extended_query))
         else: 
-            print("not appropriate")
-            sys.stdout.flush()
-            #await reason_queue.put(bug_dir, bug_id, raw_reasoned, ext_reasoned)
+            # The seatch query is not good enough and need to create anothe search query using reasoning agent.
+            print("modified search query"+ baseline_reflect_result.strip().lower())
+            #sys.stdout.flush()
+            baseline_modified_query = processBugReportContentPostReasoning_agent.run(baseline_reflect_result.strip().lower()).get("file_content", "")
+            print(baseline_modified_query)
+            with open(os.path.join(output_base, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
+                f.write(baseline_modified_query)
+        
+        #baseextendedline query
+        if extended_reflect_result.strip().lower() == 'appropriate':
+            # The search query is good enough and accpted and can be used by BL tool
+            print("appropriate")
+            #await localization_queue.put((bug_id, baseline_query, extended_query))
+        else: 
+            # The seatch query is not good enough and need to create anothe search query using reasoning agent.
+            print("modified search query"+ extended_reflect_result.strip().lower())
+            #sys.stdout.flush()
+            extended_modified_query = processBugReportContentPostReasoning_agent.run(extended_reflect_result.strip().lower()).get("file_content", "")
+            print(extended_modified_query)
+            with open(os.path.join(output_base, f"{bug_id}_extended_reasoning_query.txt"), "w", encoding="utf-8") as f:
+                f.write(extended_modified_query)
+    
+
         await log_event("REFLECT", bug_id, "done", project_id)
+        # Do not delete. We will use this later
         #await localization_queue.put((bug_id, baseline_query, extended_query))
         reflect_queue.task_done()
 
@@ -141,11 +159,12 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
     reflect_queue      = asyncio.Queue()
     localization_queue = asyncio.Queue()
 
-    bm25_index, faiss_index, processed_documents = index_source_code_agent.run(source_code_dir, f"project{project_id}", bm25_faiss_dir).get("file_content", "")
-    top_n_documents = len(processed_documents)
+    # Do not delete. We will use this later
+    #bm25_index, faiss_index, processed_documents = index_source_code_agent.run(source_code_dir, f"project{project_id}", bm25_faiss_dir).get("file_content", "")
+    #top_n_documents = len(processed_documents)
 
     bug_path = os.path.join(bug_reports_root, project_id)
-    output_base = os.path.join(queries_output_root, project_id)
+    output_base = os.path.join(queries_output_root, project_id+"_no_stem")
     search_base = os.path.join(search_result_path, project_id)
     os.makedirs(output_base, exist_ok=True)
     os.makedirs(search_base, exist_ok=True)
@@ -161,7 +180,8 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
         asyncio.create_task(reason_worker(project_id)),
         asyncio.create_task(process_worker(output_base, project_id)),
         asyncio.create_task(reflect_worker(output_base, project_id)),
-        *[asyncio.create_task(localize_worker(search_base, top_n_documents, processed_documents, project_id)) for _ in range(4)],
+        # Do not delete. We will use this later
+        #*[asyncio.create_task(localize_worker(search_base, top_n_documents, processed_documents, project_id)) for _ in range(4)],
     ]
 
     await read_queue.join()
@@ -183,9 +203,9 @@ if __name__ == "__main__":
     bm25_faiss_dir = os.path.join(base_path, "BM25andFAISS")
     
     # Process all 5 projects
-    projects = ["3"]
-    #, "13", "14", "20", "24"]
-    # projects = ["14", "20", "24"]
+    #projects = ["1","3","5","6","7"]
+    projects = ["8","9","11","12","18"]
+    
     
 
     # Clear the log file at the start
