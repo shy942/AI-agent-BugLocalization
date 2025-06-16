@@ -74,11 +74,11 @@ async def keybert_worker(output_base, top_n, project_id):
         extended_keywords = await run_blocking(processBugReportQueryKeyBERT_agent.run, extended_processed, top_n)
         extended_query = " ".join(extended_keywords.get("file_content", [])) 
 
-        output_dir = os.path.join(output_base, project_id)
+        output_dir = os.path.join(output_base, bug_id)
         os.makedirs(output_dir, exist_ok=True)
-        with open(os.path.join(output_dir, "baseline_keyBERT_query.txt"), "w", encoding="utf-8") as f:
+        with open(os.path.join(output_dir, f"{bug_id}_baseline_keyBERT_query.txt"), "w", encoding="utf-8") as f:
             f.write(baseline_query)
-        with open(os.path.join(output_dir, "extended_keyBERT_query.txt"), "w", encoding="utf-8") as f:
+        with open(os.path.join(output_dir, f"{bug_id}_extended_keyBERT_query.txt"), "w", encoding="utf-8") as f:
             f.write(extended_query)
 
         await log_event("KEYBERT", bug_id, "done", project_id)
