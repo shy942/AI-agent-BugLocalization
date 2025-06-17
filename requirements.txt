@@ -8,3 +8,8 @@ langchain-community
 langchain-huggingface
 numpy
 faiss-cpu
+streamlit
+pandas
+matplotlib
+seaborn
+plotly

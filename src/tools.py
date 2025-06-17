@@ -17,7 +17,6 @@ from langchain_community.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 import sys
 import io
-import ollama
 
 def readFile(folder_path: str) -> str:
     """Reads title.txt + description.txt """
