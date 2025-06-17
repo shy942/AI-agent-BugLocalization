@@ -104,7 +104,7 @@ async def main_async(project_id, bug_reports_root, constructed_query_root, searc
     top_n_documents = len(processed_documents)
 
     bug_path = os.path.join(bug_reports_root, project_id)
-    constructed_base = os.path.join(constructed_query_root, project_id)
+    constructed_base = os.path.join(constructed_query_root)
     search_base = os.path.join(search_result_path, project_id)
     os.makedirs(constructed_base, exist_ok=True)
     os.makedirs(search_base, exist_ok=True)

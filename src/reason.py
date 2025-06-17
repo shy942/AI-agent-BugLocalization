@@ -124,7 +124,7 @@ async def localize_worker(search_base, top_n_documents, processed_documents, pro
     while True:
         bug_id, baseline_q, extended_q = await localization_queue.get()
 
-        out_dir = os.path.join(search_base, bug_id)
+        out_dir = os.path.join(search_base)
         os.makedirs(out_dir, exist_ok=True)
 
         await log_event("LOCALIZE", bug_id, "baseline start", project_id)
@@ -164,7 +164,7 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
     #top_n_documents = len(processed_documents)
 
     bug_path = os.path.join(bug_reports_root, project_id)
-    output_base = os.path.join(queries_output_root, project_id+"_no_stem")
+    output_base = os.path.join(queries_output_root, project_id)
     search_base = os.path.join(search_result_path, project_id)
     os.makedirs(output_base, exist_ok=True)
     os.makedirs(search_base, exist_ok=True)

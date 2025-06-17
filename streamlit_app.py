@@ -101,9 +101,13 @@ def main():
         selected_projects = st.multiselect(
             "Select Project(s)",
             options=list(available_projects.keys()),
-            default=list(available_projects.keys())[:2] if available_projects else [],
+            default=[],
             format_func=lambda x: f"Project {x}: {available_projects.get(x, 'Unknown')}"
         )
+        
+        # Show helpful message when no projects are selected
+        if not selected_projects:
+            st.info("👆 Please select one or more projects above to get started!")
         
         st.markdown("---")
         
@@ -551,20 +555,34 @@ def get_generated_query_count(selected_projects):
 
 def get_project_status(project_id):
     """Get processing status of a project"""
-    # Check if results exist
+    # Check if search results exist for this project
     search_path = Path(f"AgentProjectData/SearchResults/{project_id}")
-    if search_path.exists() and any(search_path.iterdir()):
+    has_search_results = search_path.exists() and any(search_path.iterdir())
+    
+    # Check if queries exist for this project
+    query_paths = [
+        Path(f"AgentProjectData/ConstructedQueries/BaselineVsExtended/{project_id}"),
+        Path(f"AgentProjectData/ConstructedQueries/BaselineVsKeyBERT/{project_id}"),
+        Path(f"AgentProjectData/ConstructedQueries/BaselineVsReason/{project_id}")
+    ]
+    
+    query_counts = []
+    for query_path in query_paths:
+        if query_path.exists():
+            count = len(list(query_path.glob("*.txt")))
+            query_counts.append(count)
+        else:
+            query_counts.append(0)
+    
+    total_queries = sum(query_counts)
+    
+    # Determine status based on what exists
+    if has_search_results and total_queries > 0:
         return "✅ Completed"
-    
-    # Check if queries exist
-    query_path = Path(f"AgentProjectData/ConstructedQueries")
-    for subdir in query_path.iterdir():
-        if subdir.is_dir():
-            project_dir = subdir / project_id
-            if project_dir.exists() and any(project_dir.iterdir()):
-                return "🔄 Partially Processed"
-    
-    return "⏳ Pending"
+    elif total_queries > 0:
+        return "🔄 Queries Generated"
+    else:
+        return "⏳ Pending"
 
 def get_project_queries(project_id, selected_query_types):
     """Get constructed queries for a project"""
@@ -655,91 +673,331 @@ def load_evaluation_results(selected_projects):
 
 def run_basic_pipeline(selected_projects):
     """Run basic query pipeline"""
-    with st.spinner("Running basic query pipeline..."):
+    if not selected_projects:
+        st.error("Please select at least one project first!")
+        return
+        
+    with st.spinner(f"Running basic query pipeline for projects: {', '.join(selected_projects)}..."):
         try:
-            result = subprocess.run([sys.executable, "src/NLP.py"], 
-                                  capture_output=True, text=True, cwd=".")
-            if result.returncode == 0:
-                st.success("Basic query pipeline completed successfully!")
+            # Clear old log file
+            os.makedirs("./logs/parallel_logs", exist_ok=True)
+            with open("./logs/parallel_logs/NLP_log.txt", "w") as f:
+                f.write(f"Starting NLP pipeline for projects: {', '.join(selected_projects)}\n")
+            
+            # Create a custom script to run only selected projects
+            script_content = f"""
+import sys
+sys.path.append('./src')
+import os
+import asyncio
+from NLP import main_async
+
+async def run_selected_projects():
+    base_path = "./AgentProjectData"
+    bug_reports_root = os.path.join(base_path, "ProjectBugReports")
+    constructed_query_root = os.path.join(base_path, "ConstructedQueries/BaselineVsExtended/")
+    search_result_path = os.path.join(base_path, "SearchResults")
+    source_codes_root = os.path.join(base_path, "SourceCodes")
+    bm25_faiss_dir = os.path.join(base_path, "BM25andFAISS")
+    
+    projects = {selected_projects}
+    
+    for project_id in projects:
+        print(f"\\n=== Processing Project {{project_id}} with NLP ===")
+        
+        project_source_dir = os.path.join(source_codes_root, f"Project{{project_id}}")
+        
+        if os.path.exists(project_source_dir):
+            subdirs = [d for d in os.listdir(project_source_dir) 
+                      if os.path.isdir(os.path.join(project_source_dir, d)) and d != "Corpus"]
+            if subdirs:
+                source_code_dir = os.path.join(project_source_dir, subdirs[0])
+                src_dir = os.path.join(source_code_dir, "src")
+                if os.path.exists(src_dir):
+                    source_code_dir = src_dir
             else:
-                st.error(f"Pipeline failed: {result.stderr}")
+                source_code_dir = project_source_dir
+        else:
+            print(f"Warning: Source code directory not found for Project {{project_id}}")
+            continue
+        
+        print(f"Using source code directory: {{source_code_dir}}")
+        
+        await main_async(project_id, bug_reports_root, constructed_query_root, 
+                       search_result_path, source_code_dir, bm25_faiss_dir)
+        
+        print(f"=== Completed Project {{project_id}} ===")
+
+if __name__ == "__main__":
+    asyncio.run(run_selected_projects())
+"""
+            
+            # Write and execute the custom script
+            with open("temp_nlp_runner.py", "w") as f:
+                f.write(script_content)
+            
+            result = subprocess.run([sys.executable, "temp_nlp_runner.py"], 
+                                  capture_output=True, text=True, cwd=".")
+            
+            # Clean up temp file
+            if os.path.exists("temp_nlp_runner.py"):
+                os.remove("temp_nlp_runner.py")
+            
+            if result.returncode == 0:
+                st.success(f"Basic query pipeline completed successfully for projects: {', '.join(selected_projects)}!")
+                st.info("✅ Generated baseline and extended basic queries")
+            else:
+                st.error(f"Pipeline failed with error: {result.stderr}")
+                if result.stdout:
+                    st.code(result.stdout, language="text")
+                    
         except Exception as e:
             st.error(f"Error running pipeline: {str(e)}")
 
 def run_keybert_pipeline(selected_projects, top_n_keywords):
     """Run KeyBERT query pipeline"""
-    with st.spinner("Running KeyBERT query pipeline..."):
+    if not selected_projects:
+        st.error("Please select at least one project first!")
+        return
+        
+    with st.spinner(f"Running KeyBERT query pipeline for projects: {', '.join(selected_projects)}..."):
         try:
-            result = subprocess.run([sys.executable, "src/KEYBERT.py"], 
-                                  capture_output=True, text=True, cwd=".")
-            if result.returncode == 0:
-                st.success("KeyBERT query pipeline completed successfully!")
+            # Clear old log file
+            os.makedirs("./logs/parallel_logs", exist_ok=True)
+            with open("./logs/parallel_logs/keybert_log.txt", "w") as f:
+                f.write(f"Starting KeyBERT pipeline for projects: {', '.join(selected_projects)}\n")
+            
+            # Create a custom script to run only selected projects
+            script_content = f"""
+import sys
+sys.path.append('./src')
+import os
+import asyncio
+from KEYBERT import main_async
+
+async def run_selected_projects():
+    base_path = "./AgentProjectData"
+    bug_reports_root = os.path.join(base_path, "ProjectBugReports")
+    queries_output_root = os.path.join(base_path, "ConstructedQueries/BaselineVsKeyBERT/")
+    search_result_path = os.path.join(base_path, "SearchResults")
+    source_codes_root = os.path.join(base_path, "SourceCodes")
+    bm25_faiss_dir = os.path.join(base_path, "BM25andFAISS")
+    
+    projects = {selected_projects}
+    
+    for project_id in projects:
+        print(f"\\n=== Processing Project {{project_id}} with KeyBERT ===")
+        
+        project_source_dir = os.path.join(source_codes_root, f"Project{{project_id}}")
+        
+        if os.path.exists(project_source_dir):
+            subdirs = [d for d in os.listdir(project_source_dir) 
+                      if os.path.isdir(os.path.join(project_source_dir, d)) and d != "Corpus"]
+            if subdirs:
+                source_code_dir = os.path.join(project_source_dir, subdirs[0])
+                src_dir = os.path.join(source_code_dir, "src")
+                if os.path.exists(src_dir):
+                    source_code_dir = src_dir
             else:
-                st.error(f"Pipeline failed: {result.stderr}")
+                source_code_dir = project_source_dir
+        else:
+            print(f"Warning: Source code directory not found for Project {{project_id}}")
+            continue
+        
+        print(f"Using source code directory: {{source_code_dir}}")
+        
+        await main_async(project_id, bug_reports_root, queries_output_root, 
+                       search_result_path, source_code_dir, bm25_faiss_dir)
+        
+        print(f"=== Completed Project {{project_id}} ===")
+
+if __name__ == "__main__":
+    asyncio.run(run_selected_projects())
+"""
+            
+            # Write and execute the custom script
+            with open("temp_keybert_runner.py", "w") as f:
+                f.write(script_content)
+            
+            result = subprocess.run([sys.executable, "temp_keybert_runner.py"], 
+                                  capture_output=True, text=True, cwd=".")
+            
+            # Clean up temp file
+            if os.path.exists("temp_keybert_runner.py"):
+                os.remove("temp_keybert_runner.py")
+            
+            if result.returncode == 0:
+                st.success(f"KeyBERT query pipeline completed successfully for projects: {', '.join(selected_projects)}!")
+                st.info("✅ Generated baseline and extended KeyBERT queries")
+            else:
+                st.error(f"Pipeline failed with error: {result.stderr}")
+                if result.stdout:
+                    st.code(result.stdout, language="text")
+                    
         except Exception as e:
             st.error(f"Error running pipeline: {str(e)}")
 
 def run_reasoning_pipeline(selected_projects):
     """Run reasoning query pipeline"""
-    with st.spinner("Running reasoning query pipeline..."):
+    if not selected_projects:
+        st.error("Please select at least one project first!")
+        return
+        
+    with st.spinner(f"Running reasoning query pipeline for projects: {', '.join(selected_projects)}..."):
         try:
-            result = subprocess.run([sys.executable, "src/reason.py"], 
-                                  capture_output=True, text=True, cwd=".")
-            if result.returncode == 0:
-                st.success("Reasoning query pipeline completed successfully!")
+            # Clear old log file
+            os.makedirs("./logs/parallel_logs", exist_ok=True)
+            with open("./logs/parallel_logs/reason_log.txt", "w") as f:
+                f.write(f"Starting Reasoning pipeline for projects: {', '.join(selected_projects)}\n")
+            
+            # Create a custom script to run only selected projects
+            script_content = f"""
+import sys
+sys.path.append('./src')
+import os
+import asyncio
+from reason import main_async
+
+async def run_selected_projects():
+    base_path = "./AgentProjectData"
+    bug_reports_root = os.path.join(base_path, "ProjectBugReports")
+    queries_output_root = os.path.join(base_path, "ConstructedQueries/BaselineVsReason/")
+    search_result_path = os.path.join(base_path, "SearchResults")
+    source_codes_root = os.path.join(base_path, "SourceCodes")
+    bm25_faiss_dir = os.path.join(base_path, "BM25andFAISS")
+    
+    projects = {selected_projects}
+    
+    for project_id in projects:
+        print(f"\\n=== Processing Project {{project_id}} with Reasoning ===")
+        
+        project_source_dir = os.path.join(source_codes_root, f"Project{{project_id}}")
+        
+        if os.path.exists(project_source_dir):
+            subdirs = [d for d in os.listdir(project_source_dir) 
+                      if os.path.isdir(os.path.join(project_source_dir, d)) and d != "Corpus"]
+            if subdirs:
+                source_code_dir = os.path.join(project_source_dir, subdirs[0])
+                src_dir = os.path.join(source_code_dir, "src")
+                if os.path.exists(src_dir):
+                    source_code_dir = src_dir
             else:
-                st.error(f"Pipeline failed: {result.stderr}")
+                source_code_dir = project_source_dir
+        else:
+            print(f"Warning: Source code directory not found for Project {{project_id}}")
+            continue
+        
+        print(f"Using source code directory: {{source_code_dir}}")
+        
+        await main_async(project_id, bug_reports_root, queries_output_root, 
+                       search_result_path, source_code_dir, bm25_faiss_dir)
+        
+        print(f"=== Completed Project {{project_id}} ===")
+
+if __name__ == "__main__":
+    asyncio.run(run_selected_projects())
+"""
+            
+            # Write and execute the custom script
+            with open("temp_reason_runner.py", "w") as f:
+                f.write(script_content)
+            
+            result = subprocess.run([sys.executable, "temp_reason_runner.py"], 
+                                  capture_output=True, text=True, cwd=".")
+            
+            # Clean up temp file
+            if os.path.exists("temp_reason_runner.py"):
+                os.remove("temp_reason_runner.py")
+            
+            if result.returncode == 0:
+                st.success(f"Reasoning query pipeline completed successfully for projects: {', '.join(selected_projects)}!")
+                st.info("✅ Generated baseline and extended reasoning queries")
+            else:
+                st.error(f"Pipeline failed with error: {result.stderr}")
+                if result.stdout:
+                    st.code(result.stdout, language="text")
+                    
         except Exception as e:
             st.error(f"Error running pipeline: {str(e)}")
 
 def run_complete_pipeline(selected_projects):
     """Run complete pipeline"""
-    with st.spinner("Running complete pipeline..."):
+    if not selected_projects:
+        st.error("Please select at least one project first!")
+        return
+        
+    with st.spinner(f"Running complete pipeline for projects: {', '.join(selected_projects)}..."):
         try:
-            result = subprocess.run(["bash", "run.sh"], 
-                                  capture_output=True, text=True, cwd=".")
-            if result.returncode == 0:
-                st.success("Complete pipeline finished successfully!")
-                st.info("Check the logs directory for detailed output.")
-            else:
-                st.error(f"Pipeline failed: {result.stderr}")
+            # Create directories
+            os.makedirs("./logs/parallel_logs", exist_ok=True)
+            
+            # Run all three pipelines sequentially
+            st.info("🔄 Step 1/3: Running Basic NLP Pipeline...")
+            run_basic_pipeline(selected_projects)
+            
+            st.info("🔄 Step 2/3: Running KeyBERT Pipeline...")
+            run_keybert_pipeline(selected_projects, 10)  # Default top_n_keywords
+            
+            st.info("🔄 Step 3/3: Running Reasoning Pipeline...")
+            run_reasoning_pipeline(selected_projects)
+            
+            st.success(f"✅ Complete pipeline finished successfully for projects: {', '.join(selected_projects)}!")
+            st.info("Check the Search Queries and Search Results tabs to view the generated outputs.")
+            
         except Exception as e:
-            st.error(f"Error running pipeline: {str(e)}")
+            st.error(f"Error running complete pipeline: {str(e)}")
 
 def run_evaluation(selected_projects):
     """Run evaluation"""
-    with st.spinner("Running evaluation..."):
+    if not selected_projects:
+        st.error("Please select at least one project first!")
+        return
+        
+    with st.spinner(f"Running evaluation for projects: {', '.join(selected_projects)}..."):
         try:
             result = subprocess.run([sys.executable, "src/evaluate.py"], 
                                   capture_output=True, text=True, cwd=".")
             if result.returncode == 0:
                 st.success("Evaluation completed successfully!")
+                st.info("✅ Check the Evaluation tab to view performance metrics")
             else:
                 st.error(f"Evaluation failed: {result.stderr}")
+                if result.stdout:
+                    st.code(result.stdout, language="text")
         except Exception as e:
             st.error(f"Error running evaluation: {str(e)}")
 
 def show_pipeline_status():
     """Show current pipeline status"""
-    # Check for running processes
+    st.markdown("**🔄 Pipeline Status:**")
+    
+    # Check for running processes and recent activity
     log_files = [
-        "logs/parallel_logs/NLP_log.txt",
-        "logs/parallel_logs/keybert_log.txt", 
-        "logs/parallel_logs/reason_log.txt"
+        ("NLP (Basic)", "logs/parallel_logs/NLP_log.txt"),
+        ("KeyBERT", "logs/parallel_logs/keybert_log.txt"), 
+        ("Reasoning", "logs/parallel_logs/reason_log.txt")
     ]
     
     status_found = False
-    for log_file in log_files:
+    current_time = datetime.now()
+    
+    for name, log_file in log_files:
         if Path(log_file).exists():
             status_found = True
             mtime = datetime.fromtimestamp(Path(log_file).stat().st_mtime)
-            if (datetime.now() - mtime).seconds < 300:  # Updated in last 5 minutes
-                st.markdown(f'<span class="status-running">🔄 {log_file.split("/")[-1].replace("_log.txt", "").upper()} pipeline is running</span>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<span class="status-completed">✅ {log_file.split("/")[-1].replace("_log.txt", "").upper()} pipeline completed</span>', unsafe_allow_html=True)
+            time_diff = (current_time - mtime).total_seconds()
+            
+            if time_diff < 60:  # Updated in last minute - likely running
+                st.markdown(f'<span class="status-running">🔄 {name} pipeline is running</span>', unsafe_allow_html=True)
+            elif time_diff < 3600:  # Updated in last hour - recently completed
+                st.markdown(f'<span class="status-completed">✅ {name} pipeline completed recently</span>', unsafe_allow_html=True)
+            else:  # Older logs
+                st.markdown(f'<span class="status-completed">✅ {name} pipeline completed</span>', unsafe_allow_html=True)
+        else:
+            st.markdown(f"⏳ {name} pipeline - No activity detected")
     
     if not status_found:
-        st.info("No pipeline activity detected.")
+        st.info("No pipeline activity detected. Run a pipeline to see status updates.")
 
 def show_recent_logs():
     """Show recent log entries"""

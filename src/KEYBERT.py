@@ -74,7 +74,7 @@ async def keybert_worker(output_base, top_n, project_id):
         extended_keywords = await run_blocking(processBugReportQueryKeyBERT_agent.run, extended_processed, top_n)
         extended_query = " ".join(extended_keywords.get("file_content", [])) 
 
-        output_dir = os.path.join(output_base, bug_id)
+        output_dir = os.path.join(output_base)
         os.makedirs(output_dir, exist_ok=True)
         with open(os.path.join(output_dir, f"{bug_id}_baseline_keyBERT_query.txt"), "w", encoding="utf-8") as f:
             f.write(baseline_query)
@@ -98,7 +98,7 @@ async def localize_worker(search_base, top_n_documents, processed_documents, pro
             bm25_weight, faiss_weight
         )
 
-        out_dir = os.path.join(search_base, bug_id)
+        out_dir = search_base
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, f"{bug_id}_baseline_keyBERT_query_result.txt"),
                   "w", encoding="utf-8") as f:
