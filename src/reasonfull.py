@@ -3,6 +3,7 @@ import asyncio, functools, time
 from query_constructions import load_image_content
 from agents import (
     readBugReportContent_agent,
+    processBugReportContent_agent,
     processBugReportQueryReasoning_agent,
     processBugReportContentPostReasoning_agent,
     processBugReportQueryReasoningReflectOnResults_agent,
@@ -35,78 +36,66 @@ async def read_worker(project_id):
         bug_dir, bug_id = await read_queue.get()
         await log_event("READ", bug_id, "start", project_id)
         raw = readBugReportContent_agent.run(bug_dir).get("file_content", "")
-        extended_raw = raw + "\n" + load_image_content(bug_dir, bug_id)
-        await reason_queue.put((bug_dir, bug_id, raw, extended_raw))
+        # Read baseline query (title + description + image contents)
+        baseline_raw = raw + "\n" + load_image_content(bug_dir, bug_id)
+        await reason_queue.put((bug_dir, bug_id, baseline_raw))
         await log_event("READ", bug_id, "done", project_id)
         read_queue.task_done()
 
-async def reason_worker(project_id):
+async def reason_worker(output_base, project_id):
     while True:
-        bug_dir, bug_id, raw, extended_raw = await reason_queue.get()
+        bug_dir, bug_id, baseline_raw = await reason_queue.get()
         await log_event("REASON", bug_id, "start", project_id)
-        reasoned_raw = processBugReportQueryReasoning_agent.run(raw).get("file_content", "")
-        reasoned_extended = processBugReportQueryReasoning_agent.run(extended_raw).get("file_content", "")
-        await process_queue.put((bug_dir, bug_id, raw, extended_raw, reasoned_raw, reasoned_extended))
+        #Pre-process baseline query (title + description + image contents)
+        baseline_processed = processBugReportContent_agent.run(baseline_raw).get("file_content", "")
+        #Save baseline quert
+        with open(os.path.join(output_base, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
+            f.write(baseline_processed)
+         
+        #Perform 1st reasoning 
+        reasoned_extended = processBugReportQueryReasoning_agent.run(baseline_raw).get("file_content", "")
+        await process_queue.put((bug_dir, bug_id, baseline_raw, reasoned_extended))
         await log_event("REASON", bug_id, "done", project_id)
         reason_queue.task_done()
 
 async def process_worker(output_base, project_id):
     while True:
-        bug_dir, bug_id, raw, extended_raw, raw_reasoned, ext_reasoned = await process_queue.get()
+        bug_dir, bug_id, baseline_raw, reasoned_extended = await process_queue.get()
         await log_event("PROCESS", bug_id, "start", project_id)
-        baseline_query = processBugReportContentPostReasoning_agent.run(raw_reasoned).get("file_content", "")
-        extended_query = processBugReportContentPostReasoning_agent.run(ext_reasoned).get("file_content", "")
+        #Pre-process query after 1st reasoning
+        extended_query = processBugReportContentPostReasoning_agent.run(reasoned_extended).get("file_content", "")
         
         # Do not delete the following lines
-        # with open(os.path.join(out_dir, f"{bug_id}_baseline_reasoning_query_raw.txt"), "w", encoding="utf-8") as f:
-        #     f.write(raw_reasoned)
         # with open(os.path.join(out_dir, f"{bug_id}_extended_reasoning_query_raw.txt"), "w", encoding="utf-8") as f:
         #     f.write(ext_reasoned)
-
-        # with open(os.path.join(output_base, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
-        #     f.write(baseline_query)
+         
+        # Save extended query after 1st reasoning
         with open(os.path.join(output_base, f"{bug_id}_extended_reasoning_query.txt"), "w", encoding="utf-8") as f:
             f.write(extended_query)
 
         await log_event("PROCESS", bug_id, "done", project_id)
-        await reflect_queue.put((bug_dir, bug_id, raw, extended_raw, raw_reasoned, ext_reasoned))
+        await reflect_queue.put((bug_dir, bug_id, baseline_raw, reasoned_extended))
         #await localization_queue.put((bug_id, baseline_query, extended_query))
         process_queue.task_done()
 
 async def reflect_worker(output_base, project_id):
     while True:
-        bug_dir, bug_id, raw, extended_raw, raw_reasoned, ext_reasoned = await reflect_queue.get()
+        bug_dir, bug_id, baseline_raw, reasoned_extended = await reflect_queue.get()
         await log_event("REFLECT", bug_id, "start", project_id)
-        baseline_reflect_result = processBugReportQueryReasoningReflectOnResults_agent.run(raw, raw_reasoned).get("file_content", "")
-        extended_reflect_result = processBugReportQueryReasoningReflectOnResults_agent.run(extended_raw, ext_reasoned).get("file_content", "")
+        extended_reflect_result = processBugReportQueryReasoningReflectOnResults_agent.run(baseline_raw, reasoned_extended).get("file_content", "")
 
         #Do not delete the following 4 lines. They are for testing whether reflect function is working or not.
-        # with open(os.path.join(output_base, f"{bug_id}_baseline_reasoning_reflect_query.txt"), "w", encoding="utf-8") as f:
-        #       f.write(baseline_reflect_result)
         # with open(os.path.join(output_base, f"{bug_id}_extended_reasoning_reflect_query.txt"), "w", encoding="utf-8") as f:
         #       f.write(extended_reflect_result)
         print("Bug ID: "+bug_id)
-        #baseline query
-        # if baseline_reflect_result.strip().lower() == 'appropriate':
-        #     # The search query is good enough and accpted and can be used by BL tool
-        #     print("appropriate")
-        #     #await localization_queue.put((bug_id, baseline_query, extended_query))
-        # else: 
-        #     # The seatch query is not good enough and need to create anothe search query using reasoning agent.
-        #     print("modified search query"+ baseline_reflect_result.strip().lower())
-        #     #sys.stdout.flush()
-        #     baseline_modified_query = processBugReportContentPostReasoning_agent.run(baseline_reflect_result.strip().lower()).get("file_content", "")
-        #     print(baseline_modified_query)
-        #     with open(os.path.join(output_base, f"{bug_id}_baseline_reasoning_query.txt"), "w", encoding="utf-8") as f:
-        #         f.write(baseline_modified_query)
-        
-        #baseextendedline query
+        #Check to perform 2nd time reasoning
         if extended_reflect_result.strip().lower() == 'appropriate':
             # The search query is good enough and accpted and can be used by BL tool
             print("appropriate")
             #await localization_queue.put((bug_id, baseline_query, extended_query))
         else: 
             # The seatch query is not good enough and need to create anothe search query using reasoning agent.
+            # 2nd time reasoning
             print("modified search query"+ extended_reflect_result.strip().lower())
             #sys.stdout.flush()
             extended_modified_query = processBugReportContentPostReasoning_agent.run(extended_reflect_result.strip().lower()).get("file_content", "")
@@ -177,7 +166,7 @@ async def main_async(project_id, bug_reports_root, queries_output_root, search_r
 
     workers = [
         asyncio.create_task(read_worker(project_id)),
-        asyncio.create_task(reason_worker(project_id)),
+        asyncio.create_task(reason_worker(output_base, project_id)),
         asyncio.create_task(process_worker(output_base, project_id)),
         asyncio.create_task(reflect_worker(output_base, project_id)),
         # Do not delete. We will use this later
@@ -197,7 +186,7 @@ if __name__ == "__main__":
     # Define base paths for AgentProjectData
     base_path = "./AgentProjectData"
     bug_reports_root = os.path.join(base_path, "ProjectBugReports")
-    queries_output_root = os.path.join(base_path, "ConstructedQueries/BaselineVsReason/")
+    queries_output_root = os.path.join(base_path, "ConstructedQueries/BaselineVsReasonTest/")
     search_result_path = os.path.join(base_path, "SearchResults")
     source_codes_root = os.path.join(base_path, "SourceCodes")
     bm25_faiss_dir = os.path.join(base_path, "BM25andFAISS")
@@ -206,12 +195,12 @@ if __name__ == "__main__":
     #projects = ["1","3","5","6","7","8","9","11","12","13","14","18","20","21", "22", "24", "26", "27", "31","33","38","40","42","43", "44","46","47","49","50",
                 #"59","60","62","63", "66","68","69","70","71","76","77","82","77","84","86","87","90","91","97","98","99","101","103","106","107",
                 # "114","116","122","125","128","131","135","138","140","144","146","147", "148","149","154","155","156","161","162","165","169","170","176","179",
-                # "181","185","187","188","191","195","197","198","199","201","202","203", "207","209","212","223","227","228","232","236","249","259","260","263"]
-                # "265","266","272","279","281","282","288","295","296","299","300","301","306","310","313","324","332","333","335","337","338","342","347","348"]
-                # "351","365","366","371","384","393","401","409","416","422","423","438","442","446","456","463","481","487","492","496","498","508","525","527"]
-                # "528","538","558","582","595","599","614","623","639","643","652","654"
-
-    projects = ["668","675","681","694","696","699","710","715","736","742","747","760","795"]
+                # "181","185","187","188","191","195","197","198","199","201","202","203", "207","209","212","223","227","228","232","236","249","259","260","263",
+                # "265","266","272","279","281","282","288","295","296","299","300","301","306","310","313","324","332","333","335","337","338","342","347","348",
+                # "351","365","366","371","384","393","401","409","416","422","423","438","442","446","456","463","481","487","492","496","498","508","525","527",
+                # "528","538","558","582","595","599","614","623","639","643","652","654", "668","675","681","694","696","699","710","715","736","742","747","760","795"]
+    
+    projects = ["3"]
     # Clear the log file at the start
     os.makedirs("./logs/parallel_logs", exist_ok=True)
     open("./logs/parallel_logs/reason_log.txt", "w").close()

@@ -143,9 +143,9 @@ def processBugReportQueryReasoning(bug_report_content: str) -> str:
 
     \"\"\"{bug_report_content}\"\"\"
 
-    1. Summarize the main issue described in the first line.
-    2. Include the {bug_report_content} in the second line.
-    Only provide the keywords for summary in one line. 
+    Summarize the main issue described.
+    Only provide the keywords for summary that captures the essential aspects of the bug report (functionality, 
+    symptoms, component) in one line. 
     Do not include any other text, or numbers (such as 1, 2, 3, etc.).
     Duplicate keywords are allowed.
     """
@@ -157,6 +157,16 @@ def processBugReportQueryReasoning(bug_report_content: str) -> str:
         temperature=0.3,
         max_tokens=512
     )
+    # response = litellm.completion(
+    #     model="openrouter/qwen/qwen3-8b",
+    #     api_key="",
+    #     api_base="https://openrouter.ai/api/v1",
+    #     messages=[{"role": "user", "content": prompt}],
+    #     temperature=0.3,
+    #     max_tokens=1024,
+    #     return_dict=True
+    # )
+    print(response)
     return response["choices"][0]["message"]["content"].strip()
 
 
@@ -188,7 +198,7 @@ def processBugReportQueryReasoningReflectOnResults(bug_report_content: str, sear
     2. If the search query captures the essential aspects of the bug report (functionality, symptoms, component), return only the string:
    appropriate, do not include any other string
     3. Otherwise, revise the bug report into a focused and helpful new search query. Return only the improved search query text.
-    Do not inlcude any other text. Just resturn the improved search query.
+    Do not include any other text. Just resturn the improved search query.
 
     ### Bug Report:
     {bug_report_content}
