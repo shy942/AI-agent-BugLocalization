@@ -213,7 +213,7 @@ def processBugReportQueryReasoningReflectOnResults(bug_report_content: str, sear
         response = litellm.completion(
             model="huggingface/meta-llama/Llama-3.3-70B-Instruct",
             provider="huggingface",
-            api_key="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",
+            api_key="",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=1024,
